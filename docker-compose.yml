@@ -22,6 +22,8 @@ services:
       - ./system_prompts:/app/system_prompts
       - ./tool_api:/app/tool_api
       - ./universal_api_connector:/app/universal_api_connector
+    env_file:
+      - .env
     environment:
       - ISKALA_ENV=production
       - ISKALA_PORT=8001
@@ -30,6 +32,8 @@ services:
       - RAG_PORT=8002
       - SHIELD_ENABLED=true
       - PYTHONPATH=/app
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL}
     restart: unless-stopped
     networks:
       - iskala-network
