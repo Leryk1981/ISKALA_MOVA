@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Оригінальна вишиванка</title>
+<style>
+body { margin: 0; padding: 20px; background: #f5f5f5; font-family: Arial; }
+canvas { border: 1px solid #ccc; display: block; margin: 20px auto; }
+input, button { padding: 10px; margin: 5px; font-size: 16px; }
+</style>
+</head>
+<body>
+<center>
+<input type="text" id="word" value="мова" placeholder="Слово">
+<button onclick="generate()">Створити вишивку</button>
+<canvas id="canvas" width="200" height="200"></canvas>
+</center>
+
+<script>
+// Оригінальний алгоритм вишивки за алфавітом
+const UKRAINIAN_ALPHABET = 'абвгґдеєжзиіїйклмнопрстуфхцчшщьюя';
+const COLORS = ['#bd1136', '#1a0709', '#ffffff', '#58a34a', '#2fa6c7', '#feca32'];
+
+function generatePattern(word) {
+const text = word.toLowerCase();
+const firstLetter = text[0] || 'а';
+const letterIndex = UKRAINIAN_ALPHABET.indexOf(firstLetter);
+const normalizedIndex = letterIndex >= 0 ? letterIndex : 0;
+
+// Генерація патерну на основі позиції літери в алфавіті
+const pattern = [];
+const size = 5;
+
+for (let i = 0; i < size; i++) {
+pattern[i] = [];
+for (let j = 0; j < size; j++) {
+const position = (i * size + j);
+const value = (normalizedIndex + position) % 33;
+pattern[i][j] = value % 2;
+}
+}
+
+return pattern;
+}
+
+function drawPattern(pattern, colors) {
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const size = 200;
+const cellSize = size / pattern.length;
+
+// Очистити канвас
+ctx.fillStyle = 'white';
+ctx.fillRect(0, 0, size, size);
+
+// Намалювати патерн
+for (let i = 0; i < pattern.length; i++) {
+for (let j = 0; j < pattern[i].length; j++) {
+if (pattern[i][j] === 1) {
+const colorIndex = (i + j) % colors.length;
+ctx.fillStyle = colors[colorIndex];
+ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+}
+}
+}
+
+// Рамка
+ctx.strokeStyle = '#333';
+ctx.lineWidth = 1;
+ctx.strokeRect(0, 0, size, size);
+}
+
+function generate() {
+const word = document.getElementById('word').value;
+const pattern = generatePattern(word);
+drawPattern(pattern, COLORS);
+}
+
+// Генерувати при завантаженні
+generate();
+</script>
+</body>
+</html>

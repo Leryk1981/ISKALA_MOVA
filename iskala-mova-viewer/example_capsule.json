@@ -1,0 +1,22 @@
+{
+  "mova": {
+    "short": "Створити новий проект: Система управління завданнями",
+    "full": "Створити новий проект: Система управління завданнями\n\nНамір: розробити веб-додаток для управління завданнями команди.\nКонтекст: команда з 10 розробників потребує централізованої системи.\nОчікуваний результат: функціональний MVP з основними можливостями."
+  },
+  "jalm": {
+    "short": "{\"намір\":\"створити_проект\",\"тип\":\"веб_додаток\"}",
+    "full": "{\n  \"намір\": \"створити_проект\",\n  \"параметри\": {\n    \"назва\": \"Система управління завданнями\",\n    \"тип\": \"веб_додаток\",\n    \"технології\": [\"React\", \"Node.js\", \"PostgreSQL\"],\n    \"термін\": \"2024-08-15\",\n    \"бюджет\": 50000\n  },\n  \"контекст\": {\n    \"команда\": 10,\n    \"домен\": \"project_management\",\n    \"пріоритет\": \"високий\"\n  }\n}"
+  },
+  "code": {
+    "short": "create_project('task-management-system', ['React', 'Node.js'])",
+    "full": "function createProject(name, technologies, config = {}) {\n  const project = {\n    id: generateUUID(),\n    name: name,\n    technologies: technologies,\n    createdAt: new Date(),\n    status: 'active',\n    ...config\n  };\n  \n  // Збереження в базу даних\n  await db.projects.create(project);\n  \n  // Створення репозиторію\n  const repo = await github.createRepository(name);\n  \n  // Налаштування CI/CD\n  await setupCI(name, technologies);\n  \n  return project;\n}"
+  },
+  "log": {
+    "short": "[14:30] Проект створено успішно",
+    "full": "[14:30:15] Початок створення проекту: task-management-system\n[14:30:16] Валідація параметрів: успішно\n[14:30:17] Створення структури проекту\n[14:30:18] Ініціалізація Git репозиторію\n[14:30:19] Налаштування базових залежностей\n[14:30:20] Створення бази даних: успішно\n[14:30:21] Налаштування CI/CD pipeline\n[14:30:22] Проект створено з ID: proj_12345"
+  },
+  "error": {
+    "short": "[ПОМИЛКА] Недостатньо прав для створення репозиторію",
+    "full": "Error: Insufficient permissions to create repository\n    at GitHubAPI.createRepository (/app/github.js:45:12)\n    at createProject (/app/project-manager.js:23:8)\n    at processProjectRequest (/app/main.js:67:15)\n\nStack trace:\n  - GitHubAPI.createRepository: Permission denied for user 'dev-team'\n  - createProject: Repository creation failed\n  - processProjectRequest: Project creation incomplete\n\nResolution: Contact administrator to grant repository creation permissions"
+  }
+} 

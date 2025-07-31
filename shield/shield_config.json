@@ -1,0 +1,42 @@
+{
+  "shield_name": "ISKALA Protection Shield",
+  "version": "2.0",
+  "created": "2025-07-23T13:04:37.123173",
+  "purpose": "Центральний шар захисту для підготовки ISKALA до приходу людей",
+  "architecture": {
+    "core_layer": {
+      "encryption": "vault.crypto.ChaCha20-Poly1305",
+      "verification": "vault.crypto.HMAC-SHA256",
+      "key_management": "gesture+word+time based generation"
+    },
+    "gateway_layer": {
+      "entry_points": [
+        "mova_intentions",
+        "tree_operations",
+        "user_access"
+      ],
+      "verification_pipeline": [
+        "request_validation",
+        "access_check",
+        "encryption_check"
+      ],
+      "response_handling": [
+        "encryption",
+        "logging",
+        "monitoring"
+      ]
+    },
+    "policy_layer": {
+      "dynamic_policies": true,
+      "context_aware": true,
+      "user_preference_respecting": true
+    }
+  },
+  "protection_flow": {
+    "1_request_incoming": "Всі запити проходять через shield",
+    "2_verification": "Перевірка автентичності та прав доступу",
+    "3_encryption": "Шифрування/дешифрування даних",
+    "4_policy_check": "Перевірка відповідності політикам безпеки",
+    "5_response": "Безпечна відповідь користувачеві"
+  }
+}

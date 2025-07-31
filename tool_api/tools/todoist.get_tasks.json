@@ -1,0 +1,17 @@
+{
+  "id": "tool_api.todoist.get_tasks",
+  "description": "Отримує список задач з Todoist",
+  "intent": "get_tasks",
+  "method": "GET",
+  "url": "https://api.todoist.com/rest/v2/tasks",
+  "headers": {
+    "Authorization": "Bearer {{secrets.todoist_token}}"
+  },
+  "input_schema": {
+    "project_id": "string?",
+    "filter": "string?"
+  },
+  "output_schema": {
+    "tasks": "array"
+  }
+}

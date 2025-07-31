@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестовий HTML файл</title>
+    
+    <!-- CSS стилі -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        form {
+            margin: 20px 0;
+        }
+        
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- MOVA - HTML структура -->
+    <div class="container">
+        <h1>Тестовий інтерфейс</h1>
+        
+        <form id="testForm">
+            <input type="text" id="userInput" placeholder="Введіть текст...">
+            <button type="submit" id="submitBtn">Відправити</button>
+        </form>
+        
+        <div id="output"></div>
+    </div>
+    
+    <!-- JALM - JavaScript код -->
+    <script>
+        // MOVA - DOM manipulation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('testForm');
+            const input = document.getElementById('userInput');
+            const output = document.getElementById('output');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // JALM - business logic
+                const value = input.value;
+                const processedValue = processInput(value);
+                
+                // CODE - display logic
+                if (processedValue.isValid) {
+                    output.innerHTML = `<p>Результат: ${processedValue.data}</p>`;
+                } else {
+                    output.innerHTML = `<p style="color: red;">Помилка: ${processedValue.error}</p>`;
+                }
+                
+                // LOG - logging
+                console.log('Form submitted:', value);
+            });
+        });
+        
+        // JALM - business logic function
+        function processInput(input) {
+            const result = {
+                isValid: input.trim().length > 0,
+                data: input.trim(),
+                error: null
+            };
+            
+            if (!result.isValid) {
+                result.error = 'Поле не може бути порожнім';
+            }
+            
+            return result;
+        }
+    </script>
+</body>
+</html> 

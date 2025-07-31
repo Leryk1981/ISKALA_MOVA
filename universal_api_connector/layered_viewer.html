@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISKALA/MOVA Layered String Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+        }
+
+        .layer-picker {
+            width: 80px;
+            background: #2a2a2a;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .layer-square {
+            width: 50px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .layer-square:hover {
+            transform: scale(1.1);
+        }
+
+        .layer-square.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        .mova { background: #26a65b; }
+        .jalm { background: #f1b80a; }
+        .code { background: #1e50a2; }
+        .log { background: #3b246c; }
+        .error { background: #e53935; }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .layer-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .layer-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .layer-header:hover {
+            background: #2a2a2a;
+        }
+
+        .layer-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .layer-text {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.3s;
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(90deg);
+        }
+
+        .layer-content {
+            margin-top: 10px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 5px;
+            display: none;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .layer-content.expanded {
+            display: block;
+        }
+
+        .mova-text { color: #26a65b; }
+        .jalm-text { color: #f1b80a; }
+        .code-text { color: #1e50a2; }
+        .log-text { color: #3b246c; }
+        .error-text { color: #e53935; }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            margin-top: 50px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="layer-picker">
+        <button class="layer-square mova" data-layer="mova" title="MOVA">💚</button>
+        <button class="layer-square jalm" data-layer="jalm" title="JALM">🟨</button>
+        <button class="layer-square code" data-layer="code" title="CODE">🟦</button>
+        <button class="layer-square log" data-layer="log" title="LOG">🟪</button>
+        <button class="layer-square error" data-layer="error" title="ERROR">🟥</button>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="empty-state">Оберіть шари для перегляду</div>
+    </div>
+
+    <script>
+        // Demo data
+        const capsule = {
+            mova: {
+                short: 'Додати задачу: Подати звіт до 15:00 завтра',
+                full: 'Додати задачу: Подати звіт до 15:00 завтра
+
+Намір: створити нову задачу з описом і терміном виконання.
+Контекст: щоденне планування, важливий звіт для команди.
+Очікуваний результат: задача додана в систему з правильним терміном.'
+            },
+            jalm: {
+                short: '{"намір":"створити_задачу","опис":"Подати звіт"}',
+                full: JSON.stringify({
+                    "намір": "створити_задачу",
+                    "параметри": {
+                        "опис": "Подати звіт",
+                        "термін": "2024-07-26 15:00",
+                        "пріоритет": "високий",
+                        "теги": ["звіт", "команда", "терміново"]
+                    },
+                    "контекст": {
+                        "користувач": "user123",
+                        "час_створення": "2024-07-25T23:59:00Z"
+                    }
+                }, null, 2)
+            },
+            code: {
+                short: 'create_task("Подати звіт", "2024-07-26 15:00")',
+                full: `def create_task(description, due_date, priority="medium", tags=None):
+    """
+    Створити нову задачу в системі Todoist
+
+    Args:
+        description (str): Опис задачі
+        due_date (str): Дата виконання у форматі YYYY-MM-DD HH:MM
+        priority (str): Пріоритет задачі (low/medium/high)
+        tags (list): Список тегів
+
+    Returns:
+        dict: Результат операції з ID нової задачі
+    """
+    import requests
+    import json
+    from datetime import datetime
+
+    # Перетворення дати
+    due_datetime = datetime.strptime(due_date, "%Y-%m-%d %H:%M")
+
+    # Підготовка даних
+    task_data = {
+        "content": description,
+        "due_datetime": due_datetime.isoformat(),
+        "priority": priority_map[priority],
+        "labels": tags or []
+    }
+
+    # Відправка запиту
+    response = requests.post(
+        "https://api.todoist.com/rest/v2/tasks",
+        headers={"Authorization": f"Bearer {API_TOKEN}"},
+        json=task_data
+    )
+
+    return response.json()`
+            },
+            log: {
+                short: '[23:59] Запит виконано',
+                full: '[23:59:15] Початок обробки наміру: створити_задачу
+[23:59:16] Валідація параметрів: успішно
+[23:59:17] Підключення до Todoist API
+[23:59:18] Відправка POST /rest/v2/tasks
+[23:59:19] Отримано відповідь: 200 OK
+[23:59:20] Задача створена з ID: 123456789
+[23:59:21] Збережено в локальній базі даних
+[23:59:22] Обробка завершена успішно'
+            },
+            error: {
+                short: '[ПОМИЛКА] Невірний формат дати',
+                full: `Traceback (most recent call last):
+  File "/app/mova_handler.py", line 45, in process_intent
+    task_id = create_task(description, due_date)
+  File "/app/todoist_api.py", line 23, in create_task
+    due_datetime = datetime.strptime(due_date, "%Y-%m-%d %H:%M")
+ValueError: time data 'завтра 15:00' does not match format '%Y-%m-%d %H:%M'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/app/main.py", line 78, in handle_request
+    result = process_intent(intent_data)
+  File "/app/mova_handler.py", line 52, in process_intent
+    raise IntentProcessingError(f"Failed to create task: {str(e)}")
+IntentProcessingError: Failed to create task: time data 'завтра 15:00' does not match format '%Y-%m-%d %H:%M'`
+            }
+        };
+
+        let activeLayers = [];
+
+        function toggleLayer(layer) {
+            const index = activeLayers.indexOf(layer);
+            if (index > -1) {
+                activeLayers.splice(index, 1);
+            } else {
+                activeLayers.push(layer);
+            }
+            updateDisplay();
+            updateLayerButtons();
+        }
+
+        function updateLayerButtons() {
+            document.querySelectorAll('.layer-square').forEach(btn => {
+                const layer = btn.dataset.layer;
+                btn.classList.toggle('active', activeLayers.includes(layer));
+            });
+        }
+
+        function toggleExpand(layer) {
+            const content = document.getElementById(`content-${layer}`);
+            const btn = document.getElementById(`expand-${layer}`);
+
+            content.classList.toggle('expanded');
+            btn.classList.toggle('expanded');
+            btn.textContent = content.classList.contains('expanded') ? '▾' : '▸';
+        }
+
+        function updateDisplay() {
+            const mainContent = document.getElementById('mainContent');
+
+            if (activeLayers.length === 0) {
+                mainContent.innerHTML = '<div class="empty-state">Оберіть шари для перегляду</div>';
+                return;
+            }
+
+            let html = '';
+            activeLayers.forEach(layer => {
+                const data = capsule[layer];
+                const colorClass = `${layer}-text`;
+                const iconClass = layer;
+
+                html += `
+                    <div class="layer-item">
+                        <div class="layer-header" onclick="toggleExpand('${layer}')">
+                            <div class="layer-icon ${iconClass}"></div>
+                            <div class="layer-text ${colorClass}">${data.short}</div>
+                            <button class="expand-btn" id="expand-${layer}">▸</button>
+                        </div>
+                        <div class="layer-content ${colorClass}" id="content-${layer}">
+${data.full}
+                        </div>
+                    </div>
+                `;
+            });
+
+            mainContent.innerHTML = html;
+        }
+
+        // Event listeners
+        document.querySelectorAll('.layer-square').forEach(btn => {
+            btn.addEventListener('click', () => toggleLayer(btn.dataset.layer));
+        });
+
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>

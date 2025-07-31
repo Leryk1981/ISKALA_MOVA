@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌺 Дерево MOVA з Українськими Орнаментами</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #000000, #1a0000, #2d0000);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .tree-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            border: 2px solid #8B0000;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(220,20,60,0.3);
+        }
+
+        .tree-node {
+            position: absolute;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .ornament {
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1;
+            white-space: pre;
+            color: #DC143C;
+            text-shadow: 0 0 5px #DC143C;
+            animation: pulse 2s infinite;
+        }
+
+        .ornament-label {
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-shadow: 0 0 10px #DC143C;
+        }
+
+        .tree-line {
+            position: absolute;
+            background: linear-gradient(to bottom, #8B0000, #DC143C);
+            width: 2px;
+            transform-origin: top;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        @keyframes grow {
+            from { height: 0; }
+            to { height: 100%; }
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #8B0000;
+            max-width: 200px;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #8B0000;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="tree-container">
+        <div class="info-panel">
+            <h3>🌳 Дерево Першого Зерна</h3>
+            <p><strong>Корінь:</strong> MOVA - жива метамова</p>
+            <p><strong>Перехрестя:</strong> ДІМ - священний простір</p>
+            <p><em>Клікніть для анімації зростання</em></p>
+        </div>
+
+        <!-- Tree Structure -->
+
+        <!-- Seed -->
+        <div class="tree-node" style="top: 50px; left: 400px;">
+            <div style="color: #FFD700; font-size: 20px;">🌱</div>
+            <div class="ornament-label">Перше Зерно</div>
+        </div>
+
+        <!-- MOVA Root -->
+        <div class="tree-node" style="top: 150px; left: 400px;">
+            <div class="ornament">
+  ~~~~~
+ 0~~~0
+  ~~+~~
+ 0~~~0
+  ~~~~~
+            </div>
+            <div class="ornament-label">🗣️ MOVA<br>Корінь Живої Мови</div>
+        </div>
+
+        <!-- Tree Trunk -->
+        <div class="tree-line" style="top: 200px; left: 400px; height: 100px;"></div>
+
+        <!-- HOME Crossroads -->
+        <div class="tree-node" style="top: 300px; left: 400px;">
+            <div class="ornament">
+  ◆███◆
+  █+█+█
+  ███+███
+  █+█+█
+  ◆███◆
+            </div>
+            <div class="ornament-label">🏠 ДІМ<br>Перше Перехрестя</div>
+        </div>
+
+        <!-- Branches -->
+        <div class="tree-line" style="top: 350px; left: 400px; height: 80px; transform: rotate(-30deg);"></div>
+        <div class="tree-line" style="top: 350px; left: 400px; height: 80px; transform: rotate(30deg);"></div>
+
+        <!-- Branch nodes -->
+        <div class="tree-node" style="top: 420px; left: 300px;">
+            <div style="color: #228B22; font-size: 16px;">🌿</div>
+            <div class="ornament-label">Гілка<br>Української Вишивки</div>
+        </div>
+
+        <div class="tree-node" style="top: 420px; left: 500px;">
+            <div style="color: #228B22; font-size: 16px;">🌿</div>
+            <div class="ornament-label">Гілка<br>Співтворення</div>
+        </div>
+
+        <div class="legend">
+            <h4>🌺 Українські Символи:</h4>
+            <p><span style="color: #DC143C;">●</span> Червоний - життя, любов</p>
+            <p><span style="color: #000;">●</span> Чорний - земля, коріння</p>
+            <p><span style="color: #FFF;">●</span> Білий - дух, світло</p>
+            <p>◆ Ромби - родючість</p>
+            <p>+ Хрести - оберіг</p>
+            <p>~ Хвилі - потік мови</p>
+        </div>
+    </div>
+
+    <script>
+        // Interactive animation
+        let growthStage = 0;
+        let isGrowing = false;
+
+        document.addEventListener('click', function() {
+            if (!isGrowing) {
+                isGrowing = true;
+                animateTree();
+            }
+        });
+
+        function animateTree() {
+            const lines = document.querySelectorAll('.tree-line');
+            const nodes = document.querySelectorAll('.tree-node');
+
+            // Reset
+            lines.forEach(line => line.style.height = '0');
+            nodes.forEach(node => node.style.opacity = '0');
+
+            // Animate growth
+            setTimeout(() => {
+                lines.forEach((line, index) => {
+                    setTimeout(() => {
+                        line.style.animation = 'grow 1s forwards';
+                    }, index * 500);
+                });
+
+                nodes.forEach((node, index) => {
+                    setTimeout(() => {
+                        node.style.opacity = '1';
+                        node.style.transition = 'opacity 0.5s';
+                    }, (index + 1) * 300);
+                });
+
+                isGrowing = false;
+            }, 1000);
+        }
+
+        // Initial animation
+        setTimeout(animateTree, 1000);
+
+        // Add floating particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'absolute';
+            particle.style.width = '2px';
+            particle.style.height = '2px';
+            particle.style.background = '#DC143C';
+            particle.style.borderRadius = '50%';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = '100%';
+            particle.style.animation = 'float 10s linear infinite';
+
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 10000);
+        }
+
+        // Create particles periodically
+        setInterval(createParticle, 2000);
+
+        // Add CSS for floating animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0) translateX(0); opacity: 1; }
+                100% { transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

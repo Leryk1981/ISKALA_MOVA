@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌺 Вишиванкові підписи для дерева сенсів</title>
+<style>
+body {
+font-family: 'Arial', sans-serif;
+background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+margin: 0;
+padding: 20px;
+color: #333;
+}
+.container {
+max-width: 1200px;
+margin: 0 auto;
+background: white;
+border-radius: 15px;
+box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+overflow: hidden;
+}
+.header {
+background: linear-gradient(135deg, #8B0000, #DC143C);
+color: white;
+padding: 30px;
+text-align: center;
+}
+.form-section {
+padding: 30px;
+}
+.form-group {
+margin-bottom: 20px;
+}
+label {
+display: block;
+margin-bottom: 5px;
+font-weight: bold;
+color: #8B0000;
+}
+input, select, textarea {
+width: 100%;
+padding: 12px;
+border: 2px solid #ddd;
+border-radius: 8px;
+font-size: 16px;
+}
+button {
+background: linear-gradient(135deg, #8B0000, #DC143C);
+color: white;
+padding: 15px 30px;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+font-size: 16px;
+margin: 10px 5px;
+}
+button:hover {
+background: linear-gradient(135deg, #DC143C, #FF6347);
+}
+.preview {
+margin: 20px 0;
+padding: 20px;
+border: 2px solid #8B0000;
+border-radius: 10px;
+background: #fff;
+}
+.embroidery-canvas {
+border: 1px solid #ddd;
+margin: 10px 0;
+}
+.saved-signatures {
+margin-top: 30px;
+padding: 20px;
+background: #f9f9f9;
+border-radius: 10px;
+}
+.signature-item {
+border: 1px solid #ddd;
+margin: 10px 0;
+padding: 15px;
+border-radius: 8px;
+background: white;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🌺 Вишиванкові підписи для дерева сенсів</h1>
+<p>Створюйте унікальні українські орнаменти для ваших намірів</p>
+</div>
+
+<div class="form-section">
+<h2>Створити новий підпис</h2>
+
+<div class="form-group">
+<label for="nodeId">ID вузла:</label>
+<input type="text" id="nodeId" placeholder="наприклад: мова-001" value="test-001">
+</div>
+
+<div class="form-group">
+<label for="intentionText">Текст наміру:</label>
+<textarea id="intentionText" rows="3" placeholder="Ваш намір або повідомлення...">мова</textarea>
+</div>
+
+<div class="form-group">
+<label for="colorScheme">Кольорова схема:</label>
+<select id="colorScheme">
+<option value="traditional">Традиційна (червоний, чорний, білий)</option>
+<option value="spring">Весняна (зелений, жовтий, білий)</option>
+<option value="sky">Небесна (синій, білий, жовтий)</option>
+<option value="earth">Земна (коричневий, зелений, бежевий)</option>
+</select>
+</div>
+
+<button onclick="generatePreview()">Переглянути вишиванку</button>
+<button onclick="saveSignature()">Зберегти підпис</button>
+<button onclick="loadSignatures()">Показати збережені</button>
+</div>
+
+<div id="preview" class="preview" style="display: none;">
+<h3>Попередній перегляд:</h3>
+<canvas id="embroideryCanvas" class="embroidery-canvas" width="300" height="300"></canvas>
+<div id="signatureInfo"></div>
+</div>
+
+<div id="savedSignatures" class="saved-signatures" style="display: none;">
+<h3>Збережені підписи:</h3>
+<div id="signaturesList"></div>
+</div>
+</div>
+
+<script>
+// Ukrainian Embroidery Generator - Alphabet-based Pattern Generation
+class UkrainianEmbroideryGenerator {
+constructor() {
+this.colors = {
+red: '#bd1136',
+black: '#1a0709',
+white: '#ffffff',
+green: '#58a34a',
+blue: '#2fa6c7',
+yellow: '#feca32',
+brown: '#8B4513',
+beige: '#F5DEB3'
+};
+
+this.colorSchemes = {
+traditional: ['#bd1136', '#1a0709', '#ffffff'],
+spring: ['#58a34a', '#feca32', '#ffffff'],
+sky: ['#2fa6c7', '#ffffff', '#feca32'],
+earth: ['#8B4513', '#58a34a', '#F5DEB3']
+};
+
+// Ukrainian alphabet mapping for embroidery patterns
+this.alphabetPatterns = {
+'а': [1,1,1,1,1,1,1,1,1],
+'б': [1,0,0,0,1,0,0,0,1],
+'в': [1,1,0,1,1,0,1,1,0],
+'г': [1,0,1,0,1,0,1,0,1],
+'д': [1,1,1,0,0,0,1,1,1],
+'е': [1,0,0,1,1,1,1,1,1],
+'є': [1,1,0,1,0,1,1,1,1],
+'ж': [1,0,1,0,1,0,1,0,1],
+'з': [1,1,0,0,0,0,1,1,1],
+'и': [1,0,1,1,0,1,1,0,1],
+'і': [1,0,0,0,1,0,0,0,1],
+'ї': [1,1,0,1,0,1,1,1,1],
+'й': [1,1,0,0,1,0,1,1,0],
+'к': [1,0,0,1,0,1,1,0,1],
+'л': [1,0,1,1,0,1,1,0,1],
+'м': [1,1,1,1,1,1,1,1,1],
+'н': [1,0,1,0,1,0,1,0,1],
+'о': [1,1,1,0,0,0,1,1,1],
+'п': [1,1,1,1,1,1,1,1,1],
+'р': [1,0,1,0,1,0,1,0,1],
+'с': [1,1,0,0,0,0,1,1,1],
+'т': [1,0,0,0,1,0,0,0,1],
+'у': [1,0,0,1,1,1,1,1,1],
+'ф': [1,0,1,0,1,0,1,0,1],
+'х': [1,0,1,0,1,0,1,0,1],
+'ц': [1,0,0,0,1,0,0,0,1],
+'ч': [1,0,1,0,1,0,1,0,1],
+'ш': [1,0,1,0,1,0,1,0,1],
+'щ': [1,0,1,0,1,0,1,0,1],
+'ю': [1,0,1,0,1,0,1,0,1],
+'я': [1,0,1,0,1,0,1,0,1]
+};
+
+this.savedSignatures = JSON.parse(localStorage.getItem('ukrainianEmbroiderySignatures') || '[]');
+}
+
+// Generate embroidery pattern based on word and color scheme
+generatePattern(word, colorScheme) {
+const letters = word.toLowerCase().split('');
+const pattern = [];
+
+// Create pattern based on first letter for simplicity
+const firstLetter = letters[0] || 'а';
+const basePattern = this.alphabetPatterns[firstLetter] || this.alphabetPatterns['а'];
+
+// Create 5x5 grid pattern
+for (let i = 0; i < 25; i++) {
+pattern.push(basePattern[i % 9]);
+}
+
+return {
+grid: pattern,
+colors: this.colorSchemes[colorScheme] || this.colorSchemes.traditional,
+word: word,
+letter: firstLetter
+};
+}
+
+// Draw embroidery pattern on canvas
+drawPattern(canvas, patternData) {
+const ctx = canvas.getContext('2d');
+const size = 15;
+const cols = 5;
+const rows = 5;
+
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+// Draw background
+ctx.fillStyle = '#ffffff';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Draw grid
+for (let r = 0; r < rows; r++) {
+  for (let c = 0; c < cols; c++) {
+    const index = r * cols + c;
+    const colorIndex = patternData.grid[index] % patternData.colors.length;
+    ctx.fillStyle = patternData.colors[colorIndex];
+    ctx.fillRect(c * size, r * size, size, size);
+  }
+}
+
+// Add border
+ctx.strokeStyle = '#333';
+ctx.lineWidth = 1;
+ctx.strokeRect(0, 0, canvas.width, canvas.height);
+}
+
+// Generate preview
+generatePreview() {
+const nodeId = document.getElementById('nodeId').value;
+const intentionText = document.getElementById('intentionText').value;
+const colorScheme = document.getElementById('colorScheme').value;
+
+if (!intentionText.trim()) {
+  alert('Будь ласка, введіть текст наміру');
+  return;
+}
+
+const patternData = this.generatePattern(intentionText, colorScheme);
+const canvas = document.getElementById('embroideryCanvas');
+this.drawPattern(canvas, patternData);
+
+const info = document.getElementById('signatureInfo');
+info.innerHTML = `
+  <p><strong>Слово:</strong> ${intentionText}</p>
+  <p><strong>Буква:</strong> ${patternData.letter.toUpperCase()}</p>
+  <p><strong>Кольори:</strong> ${colorScheme}</p>
+`;
+
+document.getElementById('preview').style.display = 'block';
+}
+
+// Save signature
+saveSignature() {
+const nodeId = document.getElementById('nodeId').value;
+const intentionText = document.getElementById('intentionText').value;
+const colorScheme = document.getElementById('colorScheme').value;
+
+if (!nodeId.trim() || !intentionText.trim()) {
+  alert('Будь ласка, заповніть всі поля');
+  return;
+}
+
+const patternData = this.generatePattern(intentionText, colorScheme);
+const signature = {
+  id: nodeId,
+  text: intentionText,
+  colorScheme: colorScheme,
+  pattern: patternData,
+  created: new Date().toISOString()
+};
+
+this.savedSignatures.push(signature);
+localStorage.setItem('ukrainianEmbroiderySignatures', JSON.stringify(this.savedSignatures));
+
+alert('Підпис збережено!');
+this.loadSignatures();
+}
+
+// Load saved signatures
+loadSignatures() {
+this.savedSignatures = JSON.parse(localStorage.getItem('ukrainianEmbroiderySignatures') || '[]');
+const list = document.getElementById('signaturesList');
+list.innerHTML = '';
+
+if (this.savedSignatures.length === 0) {
+  list.innerHTML = '<p>Немає збережених підписів</p>';
+  return;
+}
+
+this.savedSignatures.forEach((sig, index) => {
+  const item = document.createElement('div');
+  item.className = 'signature-item';
+  item.innerHTML = `
+    <h4>${sig.id}</h4>
+    <p><strong>Слово:</strong> ${sig.text}</p>
+    <p><strong>Буква:</strong> ${sig.pattern.letter.toUpperCase()}</p>
+    <p><strong>Кольори:</strong> ${sig.colorScheme}</p>
+    <p><strong>Дата:</strong> ${new Date(sig.created).toLocaleDateString('uk-UA')}</p>
+  `;
+  list.appendChild(item);
+});
+
+document.getElementById('savedSignatures').style.display = 'block';
+}
+}
+
+// Initialize generator
+const generator = new UkrainianEmbroideryGenerator();
+
+// Global functions for onclick handlers
+function generatePreview() {
+generator.generatePreview();
+}
+
+function saveSignature() {
+generator.saveSignature();
+}
+
+function loadSignatures() {
+generator.loadSignatures();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+const canvas = document.getElementById('embroideryCanvas');
+if (canvas) {
+  canvas.width = 300;
+  canvas.height = 300;
+}
+});
+</script>
+</body>
+</html>

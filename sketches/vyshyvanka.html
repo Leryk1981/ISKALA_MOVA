@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Симетрична центрована вишивка 30x30</title>
+<style>
+body { 
+    margin: 0; 
+    padding: 20px; 
+    background: #f8f4f0; 
+    font-family: 'Georgia', serif; 
+    text-align: center;
+}
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+h1 { color: #8B0000; margin-bottom: 10px; }
+.subtitle { color: #666; margin-bottom: 30px; }
+.controls {
+    margin-bottom: 20px;
+}
+input[type="text"] {
+    padding: 12px 20px;
+    font-size: 18px;
+    border: 2px solid #8B0000;
+    border-radius: 5px;
+    margin: 10px;
+    width: 200px;
+    text-align: center;
+}
+button {
+    padding: 12px 30px;
+    font-size: 16px;
+    background: #8B0000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 5px;
+}
+button:hover { background: #A52A2A; }
+#embroideryContainer {
+    margin: 20px auto;
+    display: inline-block;
+    border: 3px solid #8B0000;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+}
+canvas { 
+    display: block;
+    background: white;
+    border-radius: 3px;
+}
+.info {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
+.symmetry-info {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.4;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>🇺🇦 Симетрична центрована вишивка</h1>
+    <div class="subtitle">30x30 • Повна симетрія • Центрований алгоритм</div>
+    
+    <div class="controls">
+        <input type="text" id="word" value="мова" placeholder="Введіть слово">
+        <button onclick="generateEmbroidery()">Створити вишивку</button>
+        <button onclick="saveImage()">Зберегти зображення</button>
+    </div>
+    
+    <div class="symmetry-info">
+        <strong>Принципи симетрії:</strong><br>
+        • Всі елементи центруються відносно (15,15)<br>
+        • Квітка - ідеальний ромб навколо центру<br>
+        • Діагоналі та вертикалі симетрично розміщені<br>
+        • Кожна літера має дзеркальне відображення<br>
+        • Загальний візерунок збалансований по осях
+    </div>
+    
+    <div id="embroideryContainer">
+        <canvas id="embroidery" width="600" height="600"></canvas>
+    </div>
+    
+    <div class="info">
+        <div id="letterInfo">Літера: м (13-та в алфавіті)</div>
+        <div id="patternInfo">Симетричний центрований патерн</div>
+        <div id="stats">Клітинок: 900 | Активних: 0 | Центр: (15,15)</div>
+    </div>
+</div>
+
+<script>
+// Автентичний український алфавіт (33 літери)
+const UKRAINIAN_ALPHABET = 'абвгґдеєжзиіїйклмнопрстуфхцчшщьюя';
+const COLORS = ['#C41E3A', '#1C1C1C']; // червоний, чорний
+
+// Генератор псевдовипадкових чисел
+function seededRandom(seed) {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        const char = seed.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return function() {
+        const x = Math.sin(hash++) * 10000;
+        return x - Math.floor(x);
+    };
+}
+
+// Створення симетричної квітки
+function createSymmetricFlower(centerX, centerY, size, color) {
+    const pattern = [];
+    
+    // Ідеальний симетричний ромб
+    for (let i = -size; i <= size; i++) {
+        for (let j = -size; j <= size; j++) {
+            if (Math.abs(i) + Math.abs(j) <= size) {
+                // Додати точку та її симетричні відображення
+                const points = [
+                    {x: centerX + j, y: centerY + i},
+                    {x: centerX - j, y: centerY + i},
+                    {x: centerX + j, y: centerY - i},
+                    {x: centerX - j, y: centerY - i}
+                ];
+                
+                points.forEach(point => {
+                    if (point.x >= 0 && point.x < 30 && point.y >= 0 && point.y < 30) {
+                        pattern.push(point);
+                    }
+                });
+            }
+        }
+    }
+    
+    return pattern.map(p => ({...p, color}));
+}
+
+// Створення симетричної діагоналі
+function createSymmetricDiagonal(centerX, centerY, distance, length, color) {
+    const pattern = [];
+    
+    for (let i = 0; i < length; i++) {
+        // Чотири симетричні діагоналі
+        const points = [
+            {x: centerX + distance + i, y: centerY + distance + i}, // правий-нижній
+            {x: centerX - distance - i, y: centerY + distance + i}, // лівий-нижній
+            {x: centerX + distance + i, y: centerY - distance - i}, // правий-верхній
+            {x: centerX - distance - i, y: centerY - distance - i}  // лівий-верхній
+        ];
+        
+        points.forEach(point => {
+            if (point.x >= 0 && point.x < 30 && point.y >= 0 && point.y < 30) {
+                pattern.push({...point, color});
+            }
+        });
+    }
+    
+    return pattern;
+}
+
+// Створення симетричної вертикалі
+function createSymmetricVertical(centerX, centerY, distance, length, color) {
+    const pattern = [];
+    
+    for (let i = 0; i < length; i++) {
+        // Чотири симетричні вертикалі
+        const points = [
+            {x: centerX + distance, y: centerY + distance + i},
+            {x: centerX - distance, y: centerY + distance + i},
+            {x: centerX + distance, y: centerY - distance - i},
+            {x: centerX - distance, y: centerY - distance - i}
+        ];
+        
+        points.forEach(point => {
+            if (point.x >= 0 && point.x < 30 && point.y >= 0 && point.y < 30) {
+                pattern.push({...point, color});
+            }
+        });
+    }
+    
+    return pattern;
+}
+
+// Створення симетричного хреста
+function createSymmetricCross(centerX, centerY, size, color) {
+    const pattern = [];
+    
+    // Горизонтальний хрест
+    for (let i = -size; i <= size; i++) {
+        const points = [
+            {x: centerX + i, y: centerY},
+            {x: centerX, y: centerY + i}
+        ];
+        
+        points.forEach(point => {
+            if (point.x >= 0 && point.x < 30 && point.y >= 0 && point.y < 30) {
+                pattern.push({...point, color});
+            }
+        });
+    }
+    
+    return pattern;
+}
+
+// Генерація повністю симетричного патерну
+function generateSymmetricPattern(word) {
+    const pattern = Array(30).fill().map(() => Array(30).fill(null));
+    const letters = word.toLowerCase().split('').filter(c => UKRAINIAN_ALPHABET.includes(c));
+    
+    if (letters.length === 0) return pattern;
+    
+    const centerX = 15;
+    const centerY = 15;
+    
+    for (let i = 0; i < letters.length; i++) {
+        const letter = letters[i];
+        const letterIndex = UKRAINIAN_ALPHABET.indexOf(letter);
+        const color = COLORS[i % 2];
+        
+        let letterPattern = [];
+        
+        if (i === 0) {
+            // Центральна квітка
+            const flowerSize = 1 + Math.min(3, Math.floor(letterIndex / 8));
+            letterPattern = createSymmetricFlower(centerX, centerY, flowerSize, color);
+        } else {
+            // Симетричні елементи навколо центру
+            const distance = 2 + i * 2;
+            const length = 2 + Math.min(4, Math.floor(letterIndex / 7));
+            
+            if (i % 2 === 1) {
+                // Симетричні діагоналі
+                letterPattern = createSymmetricDiagonal(centerX, centerY, distance, length, color);
+            } else {
+                // Симетричні вертикалі/горизонталі
+                letterPattern = createSymmetricVertical(centerX, centerY, distance, length, color);
+            }
+        }
+        
+        // Додати деталі на основі літери (симетрично)
+        const random = seededRandom(letter + i);
+        const detailCount = Math.min(2, Math.floor(letterIndex / 11));
+        
+        for (let d = 0; d < detailCount; d++) {
+            const offset = Math.floor(random() * 2) + 1;
+            
+            letterPattern.forEach(point => {
+                // Додати симетричні деталі навколо кожної точки
+                const detailPoints = [
+                    {x: point.x + offset, y: point.y},
+                    {x: point.x - offset, y: point.y},
+                    {x: point.x, y: point.y + offset},
+                    {x: point.x, y: point.y - offset}
+                ];
+                
+                detailPoints.forEach(dp => {
+                    if (dp.x >= 0 && dp.x < 30 && dp.y >= 0 && dp.y < 30) {
+                        letterPattern.push({...dp, color: point.color});
+                    }
+                });
+            });
+        }
+        
+        // Застосувати патерн до сітки
+        letterPattern.forEach(point => {
+            if (pattern[point.y][point.x] === null) {
+                pattern[point.y][point.x] = point.color;
+            }
+        });
+    }
+    
+    return pattern;
+}
+
+function generateEmbroidery() {
+    const word = document.getElementById('word').value.toLowerCase();
+    const pattern = generateSymmetricPattern(word);
+    
+    drawEmbroidery(pattern, word);
+}
+
+function drawEmbroidery(pattern, word) {
+    const canvas = document.getElementById('embroidery');
+    const ctx = canvas.getContext('2d');
+    const size = 600;
+    const cellSize = size / 30;
+    
+    // Очистити канвас
+    ctx.fillStyle = '#f8f4f0';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Намалювати координатну сітку для орієнтації
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 30; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * cellSize, 0);
+        ctx.lineTo(i * cellSize, size);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(0, i * cellSize);
+        ctx.lineTo(size, i * cellSize);
+        ctx.stroke();
+    }
+    
+    // Намалювати центральні лінії
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(15 * cellSize, 0);
+    ctx.lineTo(15 * cellSize, size);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(0, 15 * cellSize);
+    ctx.lineTo(size, 15 * cellSize);
+    ctx.stroke();
+    
+    let activeCells = 0;
+    
+    // Намалювати симетричний патерн
+    for (let row = 0; row < 30; row++) {
+        for (let col = 0; col < 30; col++) {
+            const color = pattern[row][col];
+            if (color !== null) {
+                activeCells++;
+                
+                const x = col * cellSize;
+                const y = row * cellSize;
+                
+                // Основний квадрат з тінню
+                ctx.fillStyle = color;
+                ctx.fillRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+                
+                ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                ctx.fillRect(x + 3, y + 3, cellSize - 5, cellSize - 5);
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(x + 2, y + 2, cellSize - 5, cellSize - 5);
+            }
+        }
+    }
+    
+    // Оновити інформацію
+    const firstLetter = word[0] || 'а';
+    const letterIndex = UKRAINIAN_ALPHABET.indexOf(firstLetter) + 1;
+    
+    document.getElementById('letterInfo').textContent = `Літера: ${firstLetter} (${letterIndex}-та в алфавіті)`;
+    document.getElementById('patternInfo').textContent = `Симетричний центрований патерн`;
+    document.getElementById('stats').textContent = `Клітинок: 900 | Активних: ${activeCells} (${Math.round(activeCells/9)}%) | Центр: (15,15)`;
+}
+
+function saveImage() {
+    const canvas = document.getElementById('embroidery');
+    const link = document.createElement('a');
+    link.download = 'symmetrical-ukrainian-embroidery.png';
+    link.href = canvas.toDataURL();
+    link.click();
+}
+
+// Ініціалізація при завантаженні
+generateEmbroidery();
+</script>
+</body>
+</html>

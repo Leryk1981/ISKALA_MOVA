@@ -1,0 +1,26 @@
+{
+  "name": "ISKALA Protection Shield",
+  "version": "2.0",
+  "type": "unified_security_layer",
+  "description": "Центральний шар захисту ISKALA - через нього проходить і верифікується все",
+  "components": {
+    "vault_integration": "ChaCha20-Poly1305 encryption + HMAC verification",
+    "access_control": "Multi-layer authentication and authorization",
+    "data_protection": "End-to-end encryption for all ISKALA operations",
+    "verification_layer": "Real-time validation of all requests and data",
+    "policy_engine": "Dynamic security policies based on context"
+  },
+  "security_levels": {
+    "public": "Open access to public information",
+    "protected": "Encrypted storage with key-based access",
+    "private": "Personal data with gesture+word authentication",
+    "system": "Critical system operations with multi-factor verification"
+  },
+  "integration_points": [
+    "MOVA intention processing",
+    "Tree creation and verification",
+    "User authentication",
+    "Data encryption/decryption",
+    "Access logging and monitoring"
+  ]
+}

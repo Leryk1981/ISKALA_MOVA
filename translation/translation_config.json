@@ -1,0 +1,42 @@
+{
+  "name": "ISKALA Universal Translation Layer",
+  "version": "1.0",
+  "description": "Універсальний шар-перекладач для мультимовної підтримки ISKALA",
+  "architecture": {
+    "principle": "language_bubble_isolation",
+    "storage": "universal_semantic_layer",
+    "translation": "input_output_transformation",
+    "caching": "translation_history_cache"
+  },
+  "data_structure": {
+    "universal_sense": {
+      "payload": "універсальний зміст/намір",
+      "original_lang": "мова оригіналу",
+      "meta": "службова інформація",
+      "embedding": "вектор змісту",
+      "history": "історія перекладів"
+    }
+  },
+  "workflow": {
+    "1_input": "Користувач пише рідною мовою",
+    "2_transformation": "LLM трансформує в універсальний сенс",
+    "3_storage": "Зберігається універсальний зміст",
+    "4_output": "LLM перекладає на мову користувача",
+    "5_caching": "Переклади кешуються для ефективності"
+  },
+  "supported_languages": [
+    "uk",
+    "en",
+    "de",
+    "pl",
+    "ru",
+    "fr",
+    "es"
+  ],
+  "api_endpoints": {
+    "translate": "/translate",
+    "create_sense": "/create-sense",
+    "language_bubble": "/language-bubble",
+    "supported_languages": "/supported-languages"
+  }
+}

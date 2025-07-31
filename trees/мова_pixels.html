@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Українська текстова вишивка: мова</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: white;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function setup() {
+            createCanvas(300, 200);
+            background(255);
+            noLoop();
+            drawPixelPattern();
+        }
+
+        function drawPixelPattern() {
+            const pattern = [[0, 0, 1, 0, 0, 1, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 1, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 1, 0, 0, 1, 0, 0]];
+            const pixelSize = 15;
+            const spacing = 2;
+
+            // Calculate center position
+            const totalWidth = pattern[0].length * (pixelSize + spacing) - spacing;
+            const totalHeight = pattern.length * (pixelSize + spacing) - spacing;
+            const startX = (width - totalWidth) / 2;
+            const startY = (height - totalHeight) / 2;
+
+            // Draw each pixel
+            for (let row = 0; row < pattern.length; row++) {
+                for (let col = 0; col < pattern[row].length; col++) {
+                    const x = startX + col * (pixelSize + spacing);
+                    const y = startY + row * (pixelSize + spacing);
+
+                    if (pattern[row][col] === 1) {
+                        // Draw filled square pixel (like embroidery stitch)
+                        fill(0);
+                        noStroke();
+                        rect(x, y, pixelSize, pixelSize);
+                    } else {
+                        // Draw empty square (like empty canvas)
+                        noFill();
+                        stroke(200);
+                        strokeWeight(0.5);
+                        rect(x, y, pixelSize, pixelSize);
+                    }
+                }
+            }
+
+            // Add word label below pattern
+            fill(0);
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textSize(12);
+            text("мова", width/2, startY + totalHeight + 20);
+        }
+    </script>
+</body>
+</html>

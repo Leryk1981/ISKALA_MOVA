@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌺 Вишиванкові підписи для дерева сенсів</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #bd1136;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+
+        .section h2 {
+            color: #2fa6c7;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .preview-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .preview-item {
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .preview-item:hover {
+            border-color: #bd1136;
+            transform: scale(1.05);
+        }
+
+        .preview-canvas {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #bd1136, #8b0d28);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #8b0d28, #bd1136);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(189, 17, 54, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2fa6c7, #1a7a9a);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #1a7a9a, #2fa6c7);
+        }
+
+        .color-scheme-preview {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .color-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌺 Вишиванкові підписи для дерева сенсів</h1>
+
+        <div class="section">
+            <h2>🎯 Створити новий підпис</h2>
+            <div class="form-group">
+                <label for="nodeId">ID вузла дерева:</label>
+                <input type="text" id="nodeId" placeholder="наприклад: мова-001">
+            </div>
+
+            <div class="form-group">
+                <label for="intentionText">Текст наміру:</label>
+                <input type="text" id="intentionText" placeholder="наприклад: створити гармонію">
+            </div>
+
+            <div class="form-group">
+                <label for="colorScheme">Кольорова схема:</label>
+                <select id="colorScheme">
+                    <option value="traditional">Традиційна (червона, чорна, біла)</option>
+                    <option value="nature">Природна (зелена, синя, жовта)</option>
+                    <option value="warm">Тепла (червона, помаранчева, жовта)</option>
+                    <option value="cool">Холодна (синя, зелена, біла)</option>
+                    <option value="monochrome">Монохромна</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="patternType">Тип візерунку:</label>
+                <select id="patternType">
+                    <option value="мова">Мова (символ комунікації)</option>
+                    <option value="дім">Дім (символ безпеки)</option>
+                    <option value="любов">Любов (серце)</option>
+                    <option value="захист">Захист (оберіг)</option>
+                    <option value="мудрість">Мудрість (книга)</option>
+                    <option value="ріст">Ріст (дерево)</option>
+                    <option value="гармонія">Гармонія (баланс)</option>
+                    <option value="сила">Сила (щит)</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="generatePreview()">👁️ Переглянути</button>
+            <button class="btn btn-secondary" onclick="saveSignature()">💾 Зберегти</button>
+        </div>
+
+        <div class="section">
+            <h2>👁️ Перегляд</h2>
+            <div id="previewArea" class="preview-area">
+                <p>Виберіть параметри та натисніть "Переглянути"</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Статистика</h2>
+            <div id="statsArea" class="stats">
+                <p>Завантаження статистики...</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📥 Експорт/Імпорт</h2>
+            <button class="btn" onclick="exportData()">📤 Експорт даних</button>
+            <button class="btn btn-secondary" onclick="importData()">📥 Імпорт даних</button>
+            <input type="file" id="importFile" style="display: none;" accept=".json">
+        </div>
+    </div>
+
+    <script src="embroidery_generator.js"></script>
+    <script src="integration.js"></script>
+    <script>
+        let embroideryGen = new UkrainianEmbroideryGenerator();
+        let integration = new EmbroideryTreeIntegration(embroideryGen, null);
+
+        function generatePreview() {
+            const text = document.getElementById('intentionText').value || 'приклад';
+            const colorScheme = document.getElementById('colorScheme').value;
+            const patternType = document.getElementById('patternType').value;
+
+            const preview = integration.generatePreview(text, colorScheme, patternType);
+
+            const previewArea = document.getElementById('previewArea');
+            previewArea.innerHTML = `
+                <div class="preview-item">
+                    <img src="${preview.dataURL}" alt="Перегляд" class="preview-canvas">
+                    <p><strong>${text}</strong></p>
+                    <p>Кольори: ${colorScheme}</p>
+                    <p>Візерунок: ${patternType}</p>
+                </div>
+            `;
+        }
+
+        function saveSignature() {
+            const nodeId = document.getElementById('nodeId').value;
+            const text = document.getElementById('intentionText').value;
+            const colorScheme = document.getElementById('colorScheme').value;
+            const patternType = document.getElementById('patternType').value;
+
+            if (!nodeId || !text) {
+                alert('Будь ласка, заповніть ID вузла та текст наміру');
+                return;
+            }
+
+            const signatureData = {
+                text: text,
+                colorScheme: colorScheme,
+                patternType: patternType
+            };
+
+            const result = integration.addEmbroiderySignature(nodeId, signatureData);
+            alert('✅ Підпис збережено успішно!');
+            loadStats();
+        }
+
+        function loadStats() {
+            const stats = integration.getStatistics();
+            const statsArea = document.getElementById('statsArea');
+
+            statsArea.innerHTML = `
+                <div class="stats-item">
+                    <span>Загальна кількість вузлів:</span>
+                    <span>${stats.totalNodes}</span>
+                </div>
+                <div class="stats-item">
+                    <span>Кольорові схеми:</span>
+                    <span>${Object.keys(stats.colorSchemes).join(', ')}</span>
+                </div>
+                <div class="stats-item">
+                    <span>Візерунки:</span>
+                    <span>${Object.keys(stats.patterns).join(', ')}</span>
+                </div>
+            `;
+        }
+
+        function exportData() {
+            const data = integration.exportEmbroideryData();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'embroidery-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        document.getElementById('importFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const result = integration.importEmbroideryData(e.target.result);
+                        alert(`✅ Імпортовано ${result.imported} записів`);
+                        loadStats();
+                    } catch (error) {
+                        alert('❌ Помилка імпорту: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Load stats on page load
+        loadStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+{
+  "version": "1.0.0",
+  "created_at": "2025-07-22T09:54:45.217826",
+  "apis": [
+    {
+      "name": "google_translate_api",
+      "source": "Google",
+      "endpoint": "/translate",
+      "functions": [
+        "translate",
+        "detect_language"
+      ],
+      "keywords": [
+        "переклад",
+        "translate",
+        "language",
+        "мова",
+        "текст"
+      ],
+      "rating": 0.95,
+      "reliability": 0.98,
+      "speed": 0.9,
+      "popularity": 1000,
+      "license": "commercial",
+      "limits": {
+        "requests_per_day": 1000000,
+        "characters_per_request": 5000
+      },
+      "multimodal": false,
+      "whitelisted": true
+    },
+    {
+      "name": "deepl_api",
+      "source": "DeepL",
+      "endpoint": "/translate",
+      "functions": [
+        "translate",
+        "detect_language"
+      ],
+      "keywords": [
+        "переклад",
+        "translate",
+        "language",
+        "мова",
+        "текст",
+        "deepl"
+      ],
+      "rating": 0.92,
+      "reliability": 0.95,
+      "speed": 0.85,
+      "popularity": 500,
+      "license": "commercial",
+      "limits": {
+        "requests_per_day": 500000,
+        "characters_per_request": 5000
+      },
+      "multimodal": false,
+      "whitelisted": true
+    },
+    {
+      "name": "openai_gpt_api",
+      "source": "OpenAI",
+      "endpoint": "/chat/completions",
+      "functions": [
+        "text_generation",
+        "conversation",
+        "analysis"
+      ],
+      "keywords": [
+        "генерація",
+        "текст",
+        "розмова",
+        "аналіз",
+        "gpt",
+        "openai"
+      ],
+      "rating": 0.88,
+      "reliability": 0.92,
+      "speed": 0.8,
+      "popularity": 2000,
+      "license": "commercial",
+      "limits": {
+        "requests_per_minute": 60,
+        "tokens_per_request": 4000
+      },
+      "multimodal": false,
+      "whitelisted": true
+    },
+    {
+      "name": "image_processing_api",
+      "source": "Custom",
+      "endpoint": "/process_image",
+      "functions": [
+        "image_analysis",
+        "ocr",
+        "object_detection"
+      ],
+      "keywords": [
+        "зображення",
+        "image",
+        "фото",
+        "аналіз",
+        "розпізнавання"
+      ],
+      "rating": 0.85,
+      "reliability": 0.88,
+      "speed": 0.75,
+      "popularity": 200,
+      "license": "open",
+      "limits": {
+        "requests_per_day": 10000,
+        "file_size_mb": 10
+      },
+      "multimodal": true,
+      "whitelisted": true
+    }
+  ]
+}

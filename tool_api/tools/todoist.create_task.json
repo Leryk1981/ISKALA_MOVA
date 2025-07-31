@@ -1,0 +1,35 @@
+{
+  "id": "tool_api.todoist.create_task",
+  "description": "Створює нову задачу у Todoist",
+  "intent": "create_task",
+  "method": "POST",
+  "url": "https://api.todoist.com/rest/v2/tasks",
+  "headers": {
+    "Authorization": "Bearer {{secrets.todoist_token}}",
+    "Content-Type": "application/json"
+  },
+  "input_schema": {
+    "content": "string",
+    "project_id": "string",
+    "due_string": "string?",
+    "priority": "number?",
+    "labels": "array?"
+  },
+  "output_schema": {
+    "id": "string",
+    "content": "string",
+    "project_id": "string",
+    "created_at": "string"
+  },
+  "pre_conditions": [
+    {
+      "type": "tool_api",
+      "id": "tool_api.todoist.get_tasks",
+      "check": "content != '{{input.content}}'"
+    }
+  ],
+  "post_action": {
+    "log_to": "action_log.todoist.json",
+    "save_snapshot": true
+  }
+}

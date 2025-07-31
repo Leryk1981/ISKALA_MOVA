@@ -1,0 +1,66 @@
+services:
+  # ISKALA Core (объединенный основной сервис)
+  iskala-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iskala-core
+    ports:
+      - "8001:8001"  # Основной API
+      - "8081:8081"  # Vault API
+      - "8082:8082"  # Translation API
+      - "8002:8002"  # RAG API
+    volumes:
+      - ./data:/app/data
+      - ./state:/app/state
+      - ./logs:/app/logs
+      - ./trees:/app/trees
+      - ./vault:/app/vault
+      - ./rag_system:/app/rag_system
+      - ./translation:/app/translation
+      - ./shield:/app/shield
+      - ./system_prompts:/app/system_prompts
+      - ./tool_api:/app/tool_api
+      - ./universal_api_connector:/app/universal_api_connector
+    environment:
+      - ISKALA_ENV=production
+      - ISKALA_PORT=8001
+      - VAULT_PORT=8081
+      - TRANSLATION_PORT=8082
+      - RAG_PORT=8002
+      - SHIELD_ENABLED=true
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    networks:
+      - iskala-network
+
+  # ISKALA MOVA Viewer (отдельный веб-интерфейс)
+  iskala-viewer:
+    build:
+      context: ./iskala-mova-viewer
+      dockerfile: Dockerfile
+    container_name: iskala-viewer
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./iskala-mova-viewer:/app
+      - ./data:/app/data
+    environment:
+      - VIEWER_ENV=production
+      - VIEWER_PORT=5000
+      - ISKALA_API_URL=http://iskala-core:8001
+    restart: unless-stopped
+    depends_on:
+      - iskala-core
+    networks:
+      - iskala-network
+
+networks:
+  iskala-network:
+    driver: bridge
+    name: iskala-network
+
+volumes:
+  iskala-data:
+  iskala-logs:
+  iskala-state: 

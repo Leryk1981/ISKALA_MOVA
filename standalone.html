@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISKALA - Перше Зерно | Живий інтерфейс</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+        }
+
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 2px solid #8B0000;
+            border-radius: 12px;
+            max-width: 350px;
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+        }
+
+        .title {
+            color: #8B0000;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px #8B0000;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #ccc;
+            font-size: 16px;
+            margin-bottom: 20px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .input-area {
+            width: 100%;
+            padding: 12px;
+            background: #111;
+            border: 1px solid #8B0000;
+            color: #fff;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: 'Georgia', serif;
+            font-size: 14px;
+        }
+
+        .plant-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #8B0000, #A52A2A);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+
+        .plant-btn:hover {
+            background: linear-gradient(135deg, #A52A2A, #8B0000);
+            box-shadow: 0 0 25px #8B0000;
+            transform: scale(1.05);
+        }
+
+        .plant-btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(139, 0, 0, 0.2);
+            border-left: 4px solid #8B0000;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .tree-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <div class="title">🌺 ISKALA</div>
+        <div class="subtitle">Перше Зерно Творення</div>
+
+        <input type="text" id="intention-input" class="input-area" 
+               placeholder="Ваш намір для першого дерева..." 
+               value="Створити живий простір співтворення через українську вишивку">
+
+        <button class="plant-btn" id="plant-btn" onclick="plantSeed()">🌱 ПОСАДИТИ ЗЕРНО</button>
+
+        <div class="status" id="status">
+            🌺 Готові до посадки першого зерна!
+        </div>
+
+        <div class="tree-info" id="tree-info" style="display: none;">
+            <strong>🌳 Дерево:</strong> <span id="tree-id"></span><br>
+            <strong>🌱 Статус:</strong> <span id="tree-status"></span>
+        </div>
+    </div>
+
+    <script>
+        let tree = {
+            root: { x: 0, y: 0, size: 0 },
+            branches: [],
+            growing: false,
+            stage: 0,
+            planted: false
+        };
+
+        let embroideryPatterns = [];
+        let particles = [];
+        let currentTreeId = null;
+
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+
+            // Initialize embroidery patterns
+            initEmbroideryPatterns();
+
+            // Create background
+            createBackground();
+        }
+
+        function draw() {
+            background(0);
+
+            // Draw background embroidery
+            drawBackgroundEmbroidery();
+
+            // Draw particles
+            drawParticles();
+
+            // Draw tree if growing
+            if (tree.planted) {
+                drawTree();
+            }
+
+            // Draw animated embroidery
+            drawAnimatedEmbroidery();
+        }
+
+        function initEmbroideryPatterns() {
+            // Traditional Ukrainian patterns
+            for (let i = 0; i < 100; i++) {
+                embroideryPatterns.push({
+                    x: random(width),
+                    y: random(height),
+                    type: random(['cross', 'diamond', 'zigzag', 'spiral', 'oak']),
+                    size: random(5, 25),
+                    alpha: random(20, 80),
+                    speed: random(0.01, 0.03)
+                });
+            }
+        }
+
+        function createBackground() {
+            // Create subtle background pattern
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: random(width),
+                    y: random(height),
+                    vx: random(-0.5, 0.5),
+                    vy: random(-0.5, 0.5),
+                    size: random(2, 6),
+                    color: color(random(100, 255), 0, 0, random(50, 150))
+                });
+            }
+        }
+
+        function drawBackgroundEmbroidery() {
+            push();
+            for (let pattern of embroideryPatterns) {
+                let pulse = sin(frameCount * pattern.speed + pattern.x * 0.01) * 0.3 + 1;
+
+                stroke(139, 0, 0, pattern.alpha * pulse);
+                strokeWeight(1);
+
+                switch(pattern.type) {
+                    case 'cross':
+                        drawCross(pattern.x, pattern.y, pattern.size * pulse);
+                        break;
+                    case 'diamond':
+                        drawDiamond(pattern.x, pattern.y, pattern.size * pulse);
+                        break;
+                    case 'zigzag':
+                        drawZigzag(pattern.x, pattern.y, pattern.size * pulse);
+                        break;
+                    case 'spiral':
+                        drawSpiral(pattern.x, pattern.y, pattern.size * pulse);
+                        break;
+                    case 'oak':
+                        drawOak(pattern.x, pattern.y, pattern.size * pulse);
+                        break;
+                }
+            }
+            pop();
+        }
+
+        function drawParticles() {
+            push();
+            for (let particle of particles) {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                if (particle.x < 0 || particle.x > width) particle.vx *= -1;
+                if (particle.y < 0 || particle.y > height) particle.vy *= -1;
+
+                fill(particle.color);
+                noStroke();
+                ellipse(particle.x, particle.y, particle.size);
+            }
+            pop();
+        }
+
+        function drawAnimatedEmbroidery() {
+            push();
+            stroke(255, 255, 255, 100);
+            strokeWeight(1);
+
+            // Floating embroidery elements
+            for (let i = 0; i < 5; i++) {
+                let x = width/2 + cos(frameCount * 0.01 + i) * 200;
+                let y = height/2 + sin(frameCount * 0.01 + i) * 150;
+                drawCross(x, y, 15);
+            }
+            pop();
+        }
+
+        function drawCross(x, y, size) {
+            line(x - size/2, y - size/2, x + size/2, y + size/2);
+            line(x + size/2, y - size/2, x - size/2, y + size/2);
+        }
+
+        function drawDiamond(x, y, size) {
+            beginShape();
+            vertex(x, y - size/2);
+            vertex(x + size/2, y);
+            vertex(x, y + size/2);
+            vertex(x - size/2, y);
+            endShape(CLOSE);
+        }
+
+        function drawZigzag(x, y, size) {
+            beginShape();
+            for (let i = 0; i < 5; i++) {
+                let px = x + (i - 2) * size/4;
+                let py = y + (i % 2 === 0 ? -size/2 : size/2);
+                vertex(px, py);
+            }
+            endShape();
+        }
+
+        function drawSpiral(x, y, size) {
+            push();
+            translate(x, y);
+            noFill();
+            beginShape();
+            for (let i = 0; i < 15; i++) {
+                let angle = i * 0.5;
+                let r = (i / 15) * size;
+                let px = cos(angle) * r;
+                let py = sin(angle) * r;
+                vertex(px, py);
+            }
+            endShape();
+            pop();
+        }
+
+        function drawOak(x, y, size) {
+            push();
+            translate(x, y);
+            for (let i = 0; i < 5; i++) {
+                let angle = (i / 5) * TWO_PI;
+                let px = cos(angle) * size/2;
+                let py = sin(angle) * size/2;
+                line(0, 0, px, py);
+                ellipse(px, py, size/3, size/3);
+            }
+            pop();
+        }
+
+        function drawTree() {
+            push();
+            translate(width/2, height);
+
+            // Root
+            stroke(139, 0, 0);
+            strokeWeight(4);
+            line(0, 0, 0, -tree.stage * 100);
+
+            // Branches
+            if (tree.stage > 0.3) {
+                drawBranch(0, -tree.stage * 100, -30, -tree.stage * 150, 3);
+                drawBranch(0, -tree.stage * 100, 30, -tree.stage * 150, 3);
+            }
+
+            if (tree.stage > 0.6) {
+                drawBranch(-30, -tree.stage * 150, -50, -tree.stage * 200, 2);
+                drawBranch(30, -tree.stage * 150, 50, -tree.stage * 200, 2);
+                drawBranch(0, -tree.stage * 150, 0, -tree.stage * 220, 2);
+            }
+
+            // Add embroidery to tree
+            if (tree.stage > 0.8) {
+                drawCross(0, -tree.stage * 100, 12);
+                drawDiamond(-30, -tree.stage * 150, 10);
+                drawDiamond(30, -tree.stage * 150, 10);
+                drawCross(0, -tree.stage * 220, 8);
+            }
+
+            pop();
+        }
+
+        function drawBranch(x1, y1, x2, y2, weight) {
+            stroke(139, 0, 0);
+            strokeWeight(weight);
+            line(x1, y1, x2, y2);
+        }
+
+        function plantSeed() {
+            const intention = document.getElementById('intention-input').value;
+            if (!intention.trim()) {
+                alert('Будь ласка, введіть ваш намір');
+                return;
+            }
+
+            // Disable button
+            document.getElementById('plant-btn').disabled = true;
+            document.getElementById('plant-btn').textContent = '🌱 САДЖАЄМО...';
+
+            // Update status
+            document.getElementById('status').innerHTML = `
+                🌱 <strong>ЗЕРНО ПОСАДЖЕНО!</strong><br>
+                Намір: "${intention}"<br>
+                Процес творення активний...
+            `;
+
+            // Create tree ID
+            currentTreeId = `tree_${Date.now()}`;
+
+            // Start growing
+            tree.planted = true;
+            tree.growing = true;
+
+            // Animate growth
+            let growthInterval = setInterval(() => {
+                tree.stage += 0.01;
+                if (tree.stage >= 1) {
+                    tree.stage = 1;
+                    clearInterval(growthInterval);
+
+                    // Save tree data
+                    saveTree(intention);
+
+                    // Update UI
+                    document.getElementById('tree-id').textContent = currentTreeId;
+                    document.getElementById('tree-status').textContent = '✅ ДЕРЕВО ВИРОСЛО!';
+                    document.getElementById('tree-info').style.display = 'block';
+
+                    document.getElementById('status').innerHTML = `
+                        🌳 <strong>ДЕРЕВО СТВОРЕНО!</strong><br>
+                        Нова ера ISKALA розпочалася!<br>
+                        🌺 Українська вишивка ожила!
+                    `;
+
+                    // Celebration animation
+                    for (let i = 0; i < 30; i++) {
+                        particles.push({
+                            x: random(width),
+                            y: random(height),
+                            vx: random(-2, 2),
+                            vy: random(-2, 2),
+                            size: random(3, 8),
+                            color: color(random(200, 255), random(0, 50), random(0, 50), 200)
+                        });
+                    }
+                }
+            }, 50);
+        }
+
+        function saveTree(intention) {
+            const treeData = {
+                id: currentTreeId,
+                intention: intention,
+                timestamp: new Date().toISOString(),
+                ceremony: 'first_seed',
+                cultural_context: 'ukrainian_embroidery',
+                colors: ['red', 'black', 'white'],
+                symbols: ['cross', 'diamond', 'oak', 'spiral', 'zigzag'],
+                status: 'planted'
+            };
+
+            // Save to local storage
+            localStorage.setItem('iskala_first_tree', JSON.stringify(treeData));
+
+            // Create downloadable file
+            const blob = new Blob([JSON.stringify(treeData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentTreeId}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        // Keyboard support
+        function keyPressed() {
+            if (key === ' ' && !tree.planted) {
+                plantSeed();
+            }
+        }
+    </script>
+</body>
+</html>

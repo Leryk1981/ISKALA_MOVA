@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iskala/MOVA - Живий простір сенсів</title>
+    
+    <!-- p5.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    
+    <!-- Стилі -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            overflow: hidden;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group h3 {
+            margin-bottom: 10px;
+            color: #2a5298;
+            font-size: 16px;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #2a5298, #1e3c72);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(42, 82, 152, 0.3);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+        
+        #status {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Модальні вікна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .capsule-content {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2a5298;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2a5298;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Контроли -->
+        <div id="controls">
+            <div class="control-group">
+                <h3>🌱 Управління простором</h3>
+                <button onclick="showAddCapsuleModal()">➕ Додати сенс</button>
+                <button onclick="showLinkModal()">🔗 З'єднати</button>
+                <button onclick="refreshGraph()">🔄 Оновити</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>🤖 LLM-генерація</h3>
+                <label for="llm-mode">Режим LLM:</label>
+                <select id="llm-mode" onchange="onLLMModeChange()">
+                    <option value="api">API (стандартний)</option>
+                    <option value="live">Live-агент (CLI)</option>
+                </select>
+                <button onclick="showLLMModal()" id="llm-generate-btn">✨ Створити з LLM</button>
+                <button onclick="showTranslateModal()" id="llm-translate-btn">🌐 Перекласти текст</button>
+                <div id="llm-status">LLM: перевіряється...</div>
+                <div id="llm-live-hint" style="display:none; color:#b71c1c; margin-top:8px; font-size:13px;">
+                    Інтерактивний режим доступний лише у CLI:<br>
+                    <code>docker exec -it iskala-backend python llm_agent.py --llm</code>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>📊 Статистика</h3>
+                <div id="stats">
+                    Вузлів: <span id="node-count">0</span><br>
+                    Зв'язків: <span id="link-count">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Canvas контейнер -->
+        <div id="canvas-container"></div>
+        
+        <!-- Статус -->
+        <div id="status">
+            <span id="status-text">Завантаження...</span>
+        </div>
+    </div>
+    
+    <!-- Модальне вікно для перегляду капсули -->
+    <div id="capsuleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('capsuleModal')">&times;</span>
+            <h2 id="capsule-title">Капсула сенсу</h2>
+            <div id="capsule-body" class="capsule-content"></div>
+        </div>
+    </div>
+    
+    <!-- Модальне вікно для додавання капсули -->
+    <div id="addCapsuleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addCapsuleModal')">&times;</span>
+            <h2>➕ Додати новий сенс</h2>
+            <form id="addCapsuleForm">
+                <div class="form-group">
+                    <label for="capsuleName">Назва капсули:</label>
+                    <input type="text" id="capsuleName" required placeholder="наприклад: адаптивне-навчання">
+                </div>
+                <div class="form-group">
+                    <label for="capsuleContent">Вміст капсули:</label>
+                    <textarea id="capsuleContent" rows="10" required placeholder="Введіть вміст капсули у форматі .сенс..."></textarea>
+                </div>
+                <button type="submit">💾 Створити капсулу</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Модальне вікно для LLM генерації -->
+    <div id="llmModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('llmModal')">&times;</span>
+            <h2>✨ Створити з LLM</h2>
+            <form id="llmForm">
+                <div class="form-group">
+                    <label for="llmPrompt">Опис того, що має бути в капсулі:</label>
+                    <textarea id="llmPrompt" rows="5" required placeholder="Опишіть концепцію, яку хочете створити..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="llmName">Назва капсули (опціонально):</label>
+                    <input type="text" id="llmName" placeholder="Автоматично згенерується, якщо не вказано">
+                </div>
+                <button type="submit" id="llmSubmit">🤖 Згенерувати капсулу</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Модальне вікно для створення зв'язку -->
+    <div id="linkModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('linkModal')">&times;</span>
+            <h2>🔗 Створити зв'язок</h2>
+            <form id="linkForm">
+                <div class="form-group">
+                    <label for="linkFrom">З капсули:</label>
+                    <select id="linkFrom" required>
+                        <option value="">Оберіть капсулу-джерело</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="linkTo">До капсули:</label>
+                    <select id="linkTo" required>
+                        <option value="">Оберіть капсулу-призначення</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="linkType">Тип зв'язку:</label>
+                    <select id="linkType">
+                        <option value="LINK">Зв'язок</option>
+                        <option value="ПОХІДНА">Похідна</option>
+                        <option value="ПРОТИЛЕЖНІСТЬ">Протилежність</option>
+                        <option value="ДОПОВНЕННЯ">Доповнення</option>
+                    </select>
+                </div>
+                <button type="submit">🔗 Створити зв'язок</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальне вікно для перекладу -->
+    <div id="translateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('translateModal')">&times;</span>
+            <h2>🌐 Перекласти текст</h2>
+            <form id="translateForm">
+                <div class="form-group">
+                    <label for="translateText">Текст для перекладу:</label>
+                    <textarea id="translateText" rows="6" required placeholder="Введіть текст для перекладу..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="translateSourceLang">Мова оригіналу (опціонально):</label>
+                    <select id="translateSourceLang">
+                        <option value="">Автоматично визначити</option>
+                        <option value="uk">Українська (uk)</option>
+                        <option value="en">Англійська (en)</option>
+                        <option value="de">Німецька (de)</option>
+                        <option value="fr">Французька (fr)</option>
+                        <option value="es">Іспанська (es)</option>
+                        <option value="it">Італійська (it)</option>
+                        <option value="pl">Польська (pl)</option>
+                        <option value="ru">Російська (ru)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="translateTargetLang">Мова призначення:</label>
+                    <select id="translateTargetLang" required>
+                        <option value="">Оберіть мову</option>
+                        <option value="uk">Українська (uk)</option>
+                        <option value="en">Англійська (en)</option>
+                        <option value="de">Німецька (de)</option>
+                        <option value="fr">Французька (fr)</option>
+                        <option value="es">Іспанська (es)</option>
+                        <option value="it">Італійська (it)</option>
+                        <option value="pl">Польська (pl)</option>
+                        <option value="ru">Російська (ru)</option>
+                    </select>
+                </div>
+                <button type="submit" id="translateSubmit">🌐 Перекласти</button>
+            </form>
+            <div id="translateResult" style="display: none; margin-top: 20px;">
+                <h3>Результат перекладу:</h3>
+                <div id="translateResultContent" class="capsule-content"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+    
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html> 

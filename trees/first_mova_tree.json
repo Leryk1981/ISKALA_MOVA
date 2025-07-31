@@ -1,0 +1,71 @@
+{
+  "id": "mova_root_first_seed",
+  "name": "MOVA - Перший Корінь",
+  "type": "root_node",
+  "created_at": "2025-07-23T10:44:53.441089",
+  "ceremony": "ornaments_added_to_first_tree",
+  "intention": "Створити живий простір співтворення через українську вишивку",
+  "root_language": "MOVA",
+  "cultural_context": "українська_вишивка",
+  "ornaments": {
+    "mova_root": {
+      "symbol": "crossed_waves_with_circles",
+      "meaning": "мова",
+      "pattern": [
+        "~~~~~",
+        "0~~~0",
+        "~~+~~",
+        "0~~~0",
+        "~~~~~"
+      ],
+      "colors": {
+        "primary": "червоний",
+        "secondary": "чорний",
+        "accent": "білий"
+      },
+      "cultural_significance": "Мова як жива істота, що з'єднує покоління та світи",
+      "position": "корінь_дерева"
+    },
+    "home_crossroads": {
+      "symbol": "square_with_cross_and_diamonds",
+      "meaning": "дім",
+      "pattern": [
+        "◆███◆",
+        "█+█+█",
+        "███+███",
+        "█+█+█",
+        "◆███◆"
+      ],
+      "colors": {
+        "primary": "червоний",
+        "secondary": "чорний",
+        "accent": "білий"
+      },
+      "cultural_significance": "Дім як серце родини, захищений оберегами",
+      "position": "перше_перехрестя"
+    }
+  },
+  "branches": [
+    {
+      "id": "mova_language_branch",
+      "name": "Гілка Живої Мови",
+      "type": "language_root",
+      "description": "MOVA як жива метамова намірів",
+      "ornament": "square_home",
+      "connections": [
+        "ukrainian_embroidery",
+        "collective_creation",
+        "intention_space"
+      ]
+    }
+  ],
+  "properties": {
+    "living": true,
+    "evolving": true,
+    "multilingual": true,
+    "cultural_root": "українська",
+    "philosophy": "співтворення_людини_та_ІІ"
+  },
+  "seed_origin": "живе-зерно-iskala",
+  "updated_at": "2025-07-23T10:51:52.970508"
+}

@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "description": "Універсальний каталог Tool API для MOVA/ISKALA",
+  "tools": [
+    {
+      "id": "tool_api.todoist.create_task",
+      "intent": "create_task",
+      "service": "todoist",
+      "description": "Створення нової задачі"
+    },
+    {
+      "id": "tool_api.todoist.get_tasks",
+      "intent": "get_tasks",
+      "service": "todoist",
+      "description": "Отримання списку задач"
+    },
+    {
+      "id": "tool_api.todoist.get_projects",
+      "intent": "get_projects",
+      "service": "todoist",
+      "description": "Отримання списку проєктів"
+    }
+  ]
+}

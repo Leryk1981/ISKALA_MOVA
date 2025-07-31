@@ -1,0 +1,23 @@
+{
+  "interactions": [
+    {
+      "timestamp": "2025-07-22T22:51:41.418416",
+      "key": "test_key",
+      "value": "Тестове значення для пам'яті",
+      "context": "тестування"
+    },
+    {
+      "timestamp": "2025-07-22T23:11:32.631558",
+      "key": "execution_result",
+      "value": "Запит: \nРезультат: 3 дій виконано",
+      "context": "user_confirmed_execution"
+    },
+    {
+      "timestamp": "2025-07-22T23:30:05.586824",
+      "key": "execution_result",
+      "value": "Запит: \nРезультат: 1 дій виконано",
+      "context": "user_confirmed_execution"
+    }
+  ],
+  "contexts": {}
+}

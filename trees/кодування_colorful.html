@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кольорова українська вишивка: кодування</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="white"/><path d="M0 0h20v20H0z" fill="%23f0f0f0"/><path d="M20 0h20v20H20z" fill="%23f0f0f0"/><path d="M0 20h20v20H0z" fill="%23f0f0f0"/><path d="M20 20h20v20H20z" fill="%23f0f0f0"/></svg>');
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function setup() {
+            createCanvas(400, 300);
+            background(255);
+            noLoop();
+            drawColorfulEmbroidery();
+        }
+
+        function drawColorfulEmbroidery() {
+            const pattern = [[1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [0, 3, 0, 1, 0, 1, 0, 1, 0, 1, 0], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [0, 1, 0, 3, 0, 1, 0, 1, 0, 1, 0], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [0, 1, 0, 1, 0, 3, 0, 1, 0, 1, 0], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [0, 1, 0, 1, 0, 1, 0, 3, 0, 1, 0]];
+            const colors = {'primary': [255, 0, 0], 'accent': [0, 0, 0], 'background': [255, 255, 255], 'highlight': [255, 255, 0]};
+            const pixelSize = 20;
+            const spacing = 3;
+
+            // Color mapping
+            const colorMap = {
+                0: colors.background,
+                1: colors.primary,
+                2: colors.accent,
+                3: colors.highlight
+            };
+
+            // Calculate center position
+            const totalWidth = pattern[0].length * (pixelSize + spacing) - spacing;
+            const totalHeight = pattern.length * (pixelSize + spacing) - spacing;
+            const startX = (width - totalWidth) / 2;
+            const startY = (height - totalHeight) / 2;
+
+            // Draw each colored pixel (like embroidery stitches)
+            for (let row = 0; row < pattern.length; row++) {
+                for (let col = 0; col < pattern[row].length; col++) {
+                    const x = startX + col * (pixelSize + spacing);
+                    const y = startY + row * (pixelSize + spacing);
+                    const colorIndex = pattern[row][col];
+                    const [r, g, b] = colorMap[colorIndex];
+
+                    fill(r, g, b);
+                    noStroke();
+                    rect(x, y, pixelSize, pixelSize);
+
+                    // Add subtle shadow for depth
+                    fill(r * 0.8, g * 0.8, b * 0.8);
+                    rect(x + 1, y + 1, pixelSize - 2, pixelSize - 2);
+                }
+            }
+
+            // Add traditional Ukrainian ornament border
+            stroke(139, 69, 19); // Brown border
+            strokeWeight(2);
+            noFill();
+            rect(startX - 5, startY - 5, totalWidth + 10, totalHeight + 10);
+
+            // Add word label with traditional styling
+            fill(139, 69, 19);
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textSize(16);
+            text("кодування", width/2, startY + totalHeight + 25);
+
+            // Add cultural context
+            fill(100);
+            textSize(10);
+            text("Українська вишивка", width/2, startY + totalHeight + 40);
+        }
+    </script>
+</body>
+</html>

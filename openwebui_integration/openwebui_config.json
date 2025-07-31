@@ -1,0 +1,20 @@
+{
+  "iskala_integration": {
+    "enabled": true,
+    "iskala_url": "http://localhost:8001",
+    "api_endpoints": {
+      "health": "http://localhost:8001/health",
+      "llm_process": "http://localhost:8001/api/llm/process",
+      "tools": "http://localhost:8001/api/tools",
+      "memory": "http://localhost:8001/api/memory",
+      "websocket": "ws://localhost:8001/ws"
+    },
+    "features": {
+      "mova_trees": true,
+      "rag_system": true,
+      "translation": true,
+      "vault": true,
+      "shield": true
+    }
+  }
+}

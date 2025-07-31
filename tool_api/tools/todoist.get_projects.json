@@ -1,0 +1,14 @@
+{
+  "id": "tool_api.todoist.get_projects",
+  "description": "Отримує список проєктів з Todoist",
+  "intent": "get_projects",
+  "method": "GET",
+  "url": "https://api.todoist.com/rest/v2/projects",
+  "headers": {
+    "Authorization": "Bearer {{secrets.todoist_token}}"
+  },
+  "input_schema": {},
+  "output_schema": {
+    "projects": "array"
+  }
+}
