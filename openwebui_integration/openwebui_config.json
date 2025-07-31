@@ -4,7 +4,11 @@
     "iskala_url": "http://localhost:8001",
     "api_endpoints": {
       "health": "http://localhost:8001/health",
-      "llm_process": "http://localhost:8001/api/llm/process",
+      "chat": "http://localhost:8001/api/openwebui/chat",
+      "stream": "http://localhost:8001/api/openwebui/stream",
+      "models": "http://localhost:8001/api/openwebui/models",
+      "config": "http://localhost:8001/api/openwebui/config",
+      "status": "http://localhost:8001/api/openwebui/status",
       "tools": "http://localhost:8001/api/tools",
       "memory": "http://localhost:8001/api/memory",
       "websocket": "ws://localhost:8001/ws"
@@ -14,7 +18,66 @@
       "rag_system": true,
       "translation": true,
       "vault": true,
-      "shield": true
+      "shield": true,
+      "memory": true,
+      "tools": true,
+      "streaming": true,
+      "function_calling": true
+    },
+    "models": [
+      {
+        "id": "iskala-mova-v2",
+        "name": "ISKALA MOVA v2",
+        "description": "Українська мова та контекст",
+        "provider": "iskala",
+        "context_length": 8192,
+        "features": ["chat", "tools", "memory", "rag"],
+        "endpoint": "http://localhost:8001/api/openwebui/chat"
+      },
+      {
+        "id": "iskala-rag",
+        "name": "ISKALA RAG",
+        "description": "RAG система для документів",
+        "provider": "iskala",
+        "context_length": 16384,
+        "features": ["rag", "search", "documents"],
+        "endpoint": "http://localhost:8001/api/openwebui/chat"
+      },
+      {
+        "id": "iskala-translation",
+        "name": "ISKALA Translation",
+        "description": "Система перекладу",
+        "provider": "iskala",
+        "context_length": 4096,
+        "features": ["translation", "localization"],
+        "endpoint": "http://localhost:8001/api/openwebui/chat"
+      }
+    ],
+    "capabilities": {
+      "streaming": true,
+      "function_calling": true,
+      "memory_persistence": true,
+      "context_awareness": true,
+      "multimodal": false,
+      "vision": false,
+      "audio": false
+    },
+    "settings": {
+      "auto_connect": true,
+      "health_check_interval": 30,
+      "retry_attempts": 3,
+      "timeout": 30,
+      "enable_logging": true
+    }
+  },
+  "openwebui_settings": {
+    "default_model": "iskala-mova-v2",
+    "enable_iskala_integration": true,
+    "iskala_priority": true,
+    "show_iskala_models_first": true,
+    "custom_prompts": {
+      "iskala_intro": "Привіт! Я ISKALA MOVA - система розумних контекстів. Я можу допомогти вам з українською мовою, аналізом документів, перекладом та багатьма іншими завданнями.",
+      "iskala_help": "Доступні можливості:\n- Створення дерев сенсів (MOVA Trees)\n- Пошук та аналіз документів (RAG)\n- Переклад та локалізація\n- Безпечне зберігання даних (Vault)\n- Система безпеки (Shield)"
     }
   }
 }
