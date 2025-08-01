@@ -29,5 +29,81 @@
       "user_rating": null,
       "origin": "catalog_search"
     }
+  ],
+  "translation_8f58a684": [
+    {
+      "timestamp": "2025-08-01T19:36:42.807323",
+      "api_tool": "google_translate_api",
+      "endpoint": "/translate",
+      "preferred_score": 0.758,
+      "success": true,
+      "user_rating": null,
+      "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:37:26.501668",
+      "api_tool": "google_translate_api",
+      "endpoint": "/translate",
+      "preferred_score": 0.8,
+      "success": false,
+      "user_rating": 0.0,
+      "origin": "graph_context"
+    },
+    {
+      "timestamp": "2025-08-01T19:38:07.441286",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.758,
+      "success": true,
+      "user_rating": null,
+      "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:38:08.719766",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.758,
+      "success": false,
+      "user_rating": 0.0,
+      "origin": "catalog_search"
+    }
+  ],
+  "task_management_8816cae6": [
+    {
+      "timestamp": "2025-08-01T19:36:43.031475",
+      "api_tool": "google_translate_api",
+      "endpoint": "/translate",
+      "preferred_score": 0.6380000000000001,
+      "success": true,
+      "user_rating": null,
+      "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:37:26.513472",
+      "api_tool": "google_translate_api",
+      "endpoint": "/translate",
+      "preferred_score": 0.8,
+      "success": false,
+      "user_rating": 0.0,
+      "origin": "graph_context"
+    },
+    {
+      "timestamp": "2025-08-01T19:38:08.719766",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.6380000000000001,
+      "success": true,
+      "user_rating": null,
+      "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:38:09.928720",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.6380000000000001,
+      "success": false,
+      "user_rating": 0.0,
+      "origin": "catalog_search"
+    }
   ]
 }

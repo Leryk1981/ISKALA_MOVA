@@ -5,7 +5,7 @@
     {
       "name": "google_translate_api",
       "source": "Google",
-      "endpoint": "/translate",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
       "functions": [
         "translate",
         "detect_language"
@@ -32,7 +32,7 @@
     {
       "name": "deepl_api",
       "source": "DeepL",
-      "endpoint": "/translate",
+      "endpoint": "https://api-free.deepl.com/v2/translate",
       "functions": [
         "translate",
         "detect_language"
@@ -60,7 +60,7 @@
     {
       "name": "openai_gpt_api",
       "source": "OpenAI",
-      "endpoint": "/chat/completions",
+      "endpoint": "https://api.openai.com/v1/chat/completions",
       "functions": [
         "text_generation",
         "conversation",
@@ -89,7 +89,7 @@
     {
       "name": "image_processing_api",
       "source": "Custom",
-      "endpoint": "/process_image",
+      "endpoint": "https://api.example.com/process_image",
       "functions": [
         "image_analysis",
         "ocr",

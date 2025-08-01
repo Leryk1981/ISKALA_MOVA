@@ -19,6 +19,13 @@ COPY requirements.txt .
 # Установка Python пакетов
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Дополнительные пакеты для OpenAPI Tool Server
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    requests \
+    pydantic
+
 # Копирование всех модулей
 COPY src/ ./src/
 COPY system_prompts/ ./system_prompts/
@@ -32,6 +39,9 @@ COPY translation/ ./translation/
 COPY tool_api/ ./tool_api/
 COPY universal_api_connector/ ./universal_api_connector/
 
+# Копирование OpenAPI Tool Server
+COPY iskala_openapi_server.py ./
+
 # Создание директорий
 RUN mkdir -p /app/workspace /app/state/logs /app/vector_db /app/adapters /app/data/capsules /app/logs && \
     chown -R app:app /app && \
@@ -39,7 +49,7 @@ RUN mkdir -p /app/workspace /app/state/logs /app/vector_db /app/adapters /app/da
 
 USER app
 
-EXPOSE 8001 8081 8082 8002
+EXPOSE 8001 8081 8082 8002 8003
 
-# Запуск объединенного сервиса
+# Запуск объединенного сервиса (по умолчанию)
 CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8001"] 

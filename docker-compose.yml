@@ -40,7 +40,34 @@ services:
     networks:
       - iskala-network
 
-  # Open WebUI с предустановленными моделями OpenRouter
+  # ISKALA OpenAPI Tool Server
+  iskala-openapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iskala-openapi
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./iskala_openapi_server.py:/app/iskala_openapi_server.py
+      - ./data:/app/data
+      - ./state:/app/state
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - ISKALA_BASE_URL=http://iskala-core:8001
+      - VAULT_BASE_URL=http://iskala-core:8081
+      - TRANSLATION_BASE_URL=http://iskala-core:8082
+      - RAG_BASE_URL=http://iskala-core:8002
+    restart: unless-stopped
+    networks:
+      - iskala-network
+    depends_on:
+      - iskala-core
+    command: python iskala_openapi_server.py
+
+  # Open WebUI с предустановленными моделями OpenRouter и ISKALA Tools
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
@@ -85,10 +112,56 @@ services:
       # Настройки ISKALA интеграции
       - CUSTOM_MODELS_ENABLED=true
       - CUSTOM_MODELS_BASE_URL=http://iskala-core:8001
+      
+      # Настройки ISKALA OpenAPI Tools
+      - ENABLE_TOOLS=true
+      - TOOLS_ENABLED=true
+      
+      # Разрешения для Workspace (включая загрузку промптов)
+      - USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS=true
+      - USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS=true
+      - USER_PERMISSIONS_WORKSPACE_KNOWLEDGE_ACCESS=true
+      - USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS=true
+      
+      # Разрешения для публичного шаринга промптов
+      - USER_PERMISSIONS_WORKSPACE_PROMPTS_ALLOW_PUBLIC_SHARING=true
+      
+      # Настройки RAG (загрузка знаний)
+      - ENABLE_RAG=true
+      - RAG_EMBEDDING_ENGINE=openai
+      - RAG_EMBEDDING_MODEL=text-embedding-3-small
+      - RAG_TOP_K=3
+      - RAG_RELEVANCE_THRESHOLD=0.7
+      - CHUNK_SIZE=1000
+      - CHUNK_OVERLAP=100
+      - RAG_FILE_MAX_SIZE=50
+      - RAG_FILE_MAX_COUNT=10
+      - RAG_ALLOWED_FILE_EXTENSIONS=["pdf","docx","txt","md","json","csv"]
+      
+      # Настройки загрузки файлов
+      - USER_PERMISSIONS_CHAT_FILE_UPLOAD=true
+      - ENABLE_RAG_LOCAL_WEB_FETCH=true
+      
+      # Настройки инструментов и API
+      - ENABLE_DIRECT_CONNECTIONS=true
+      - USER_PERMISSIONS_FEATURES_DIRECT_TOOL_SERVERS=true
+      - USER_PERMISSIONS_FEATURES_CODE_INTERPRETER=true
+      - USER_PERMISSIONS_FEATURES_WEB_SEARCH=true
+      - USER_PERMISSIONS_FEATURES_IMAGE_GENERATION=true
+      
+      # Настройки веб-поиска
+      - ENABLE_RAG_WEB_SEARCH=true
+      - RAG_WEB_SEARCH_RESULT_COUNT=3
+      - RAG_WEB_SEARCH_CONCURRENT_REQUESTS=5
+      
+      # Настройки ISKALA OpenAPI Tools
+      - CUSTOM_TOOLS_ENABLED=true
+      - CUSTOM_TOOLS_BASE_URL=http://iskala-openapi:8003
     networks:
       - iskala-network
     depends_on:
       - iskala-core
+      - iskala-openapi
 
 volumes:
   open-webui-data:

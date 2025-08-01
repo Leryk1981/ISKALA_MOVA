@@ -107,22 +107,33 @@ class UniversalToolConnector:
             'result': result
         }
         
-        log_file = Path('/a0/instruments/custom/iskala/tool_api/logs/action_log.json')
-        with open(log_file, 'a', encoding='utf-8') as f:
-            json.dump(log_entry, f, ensure_ascii=False)
-            f.write('\n')
+        # Создаем относительный путь к логам
+        log_file = Path('./tool_api/logs/action_log.json')
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            with open(log_file, 'a', encoding='utf-8') as f:
+                json.dump(log_entry, f, ensure_ascii=False)
+                f.write('\n')
+        except Exception as e:
+            self.logger.warning(f"Не удалось записать лог: {e}")
     
     def find_tool_for_intent(self, intent: str) -> str:
         """Find appropriate tool for given intent"""
-        catalog_file = Path('/a0/instruments/custom/iskala/tool_api/catalogs/tool_api.catalog.json')
-        with open(catalog_file, encoding='utf-8') as f:
-            catalog = json.load(f)
-        
-        for tool in catalog['tools']:
-            if tool['intent'] == intent:
-                return tool['id']
-        
-        raise ValueError(f"No tool found for intent: {intent}")
+        catalog_file = Path('./tool_api/catalogs/tool_api.catalog.json')
+        try:
+            with open(catalog_file, encoding='utf-8') as f:
+                catalog = json.load(f)
+            
+            for tool in catalog['tools']:
+                if tool['intent'] == intent:
+                    return tool['id']
+            
+            raise ValueError(f"No tool found for intent: {intent}")
+        except FileNotFoundError:
+            raise ValueError(f"Catalog file not found: {catalog_file}")
+        except Exception as e:
+            raise ValueError(f"Error reading catalog: {e}")
 
 if __name__ == "__main__":
     connector = UniversalToolConnector()

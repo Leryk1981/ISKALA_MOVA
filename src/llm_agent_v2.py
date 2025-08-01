@@ -1,7 +1,7 @@
 """
 LLM Agent v2 для MOVA ISKALA
 На основі архітектури Agent Zero
-Підтримка OpenRouter
+Підтримка OpenRouter + Integrated Tool System
 """
 
 import asyncio
@@ -15,6 +15,9 @@ from pathlib import Path
 import aiohttp
 import openai
 from openai import AsyncOpenAI
+
+# Импорт интегрированной системы инструментов
+from integrated_tool_system import IntegratedToolSystem
 
 logger = logging.getLogger(__name__)
 
@@ -235,6 +238,60 @@ class MemoryTool(BaseTool):
             "context": "контекст запису"
         }
 
+class IntegratedToolSystemTool(BaseTool):
+    """Інструмент для роботи з інтегрованою системою інструментів"""
+    
+    def __init__(self, agent: 'LLMAgentV2'):
+        super().__init__(agent, "integrated_tools")
+        self.tool_system = IntegratedToolSystem()
+    
+    async def execute(self, intent: str, context: Dict = None, **kwargs) -> ToolResponse:
+        try:
+            # Отримуємо контекст з параметрів
+            execution_context = context or {}
+            execution_context.update(kwargs)
+            
+            # Виконуємо намір через інтегровану систему
+            result = await self.tool_system.process_intent(
+                intent_text=intent,
+                context=execution_context,
+                user_id=kwargs.get("user_id"),
+                session_id=kwargs.get("session_id"),
+                graph_context=kwargs.get("graph_context")
+            )
+            
+            if result.get("success"):
+                return ToolResponse(
+                    f"Намір '{intent}' виконано успішно",
+                    data={
+                        "result": result.get("data"),
+                        "tool_used": result.get("tool_used"),
+                        "tool_rating": result.get("tool_rating"),
+                        "explanation": result.get("explanation")
+                    }
+                )
+            else:
+                return ToolResponse(
+                    f"Помилка виконання наміру '{intent}': {result.get('error')}",
+                    success=False,
+                    data={"error": result.get("error")}
+                )
+                
+        except Exception as e:
+            return ToolResponse(f"Помилка інтегрованої системи інструментів: {e}", success=False)
+    
+    def get_description(self) -> str:
+        return "Інтегрована система інструментів: вибір та виконання найкращого API для наміру"
+    
+    def get_parameters(self) -> Dict[str, Any]:
+        return {
+            "intent": "намір користувача (наприклад: 'перекласти текст', 'створити задачу')",
+            "context": "контекст з параметрами для виконання",
+            "user_id": "ID користувача (опціонально)",
+            "session_id": "ID сесії (опціонально)",
+            "graph_context": "контекст графа для пам'яті (опціонально)"
+        }
+
 class LLMAgentV2:
     """LLM Агент v2 на основі архітектури Agent Zero з підтримкою OpenRouter"""
     
@@ -254,7 +311,8 @@ class LLMAgentV2:
             "file": FileTool(self),
             "command": CommandTool(self),
             "api": APITool(self),
-            "memory": MemoryTool(self)
+            "memory": MemoryTool(self),
+            "integrated_tools": IntegratedToolSystemTool(self)
         }
         
         # Історія взаємодій
