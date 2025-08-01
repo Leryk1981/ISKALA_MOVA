@@ -1,15 +1,17 @@
+version: '3.8'
+
 services:
-  # ISKALA Core (объединенный основной сервис)
+  # ISKALA Core сервис
   iskala-core:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: iskala-core
     ports:
-      - "8001:8001"  # Основной API
-      - "8081:8081"  # Vault API
-      - "8082:8082"  # Translation API
-      - "8002:8002"  # RAG API
+      - "8001:8001"
+      - "8081:8081"
+      - "8082:8082"
+      - "8002:8002"
     volumes:
       - ./data:/app/data
       - ./state:/app/state
@@ -38,33 +40,59 @@ services:
     networks:
       - iskala-network
 
-  # ISKALA MOVA Viewer (отдельный веб-интерфейс)
-  iskala-viewer:
-    build:
-      context: ./iskala-mova-viewer
-      dockerfile: Dockerfile
-    container_name: iskala-viewer
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./iskala-mova-viewer:/app
-      - ./data:/app/data
-    environment:
-      - VIEWER_ENV=production
-      - VIEWER_PORT=5000
-      - ISKALA_API_URL=http://iskala-core:8001
+  # Open WebUI с предустановленными моделями OpenRouter
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
     restart: unless-stopped
-    depends_on:
-      - iskala-core
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui-data:/app/backend/data
+    environment:
+      # OpenRouter API настройки
+      - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
+      - OPENAI_API_KEY=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
+      - DEFAULT_MODELS=moonshotai/kimi-k2
+      
+      # Настройки безопасности
+      - WEBUI_SECRET_KEY=iskala-secret-key-2024
+      - DEFAULT_USER_ROLE=admin
+      - ENABLE_SIGNUP=true
+      - ENABLE_LOGIN_FORM=true
+      
+      # Настройки веб-сервера
+      - WEBUI_HOST=0.0.0.0
+      - WEBUI_PORT=8080
+      - DISABLE_UI=false
+      - DISABLE_API=false
+      - DISABLE_AUTH=false
+      
+      # Дополнительные настройки
+      - ENABLE_SIGNUP=true
+      - ENABLE_LOGIN_FORM=true
+      - ENABLE_OAUTH=false
+      - ENABLE_OAUTH_GOOGLE=false
+      - ENABLE_OAUTH_GITHUB=false
+      - ENABLE_OAUTH_DISCORD=false
+      - ENABLE_OAUTH_MICROSOFT=false
+      
+      # Настройки моделей
+      - DEFAULT_MODELS=moonshotai/kimi-k2,openai/gpt-4,anthropic/claude-3.5-sonnet
+      - DEFAULT_MODELS_OPENAI=moonshotai/kimi-k2,openai/gpt-4
+      - DEFAULT_MODELS_ANTHROPIC=anthropic/claude-3.5-sonnet
+      
+      # Настройки ISKALA интеграции
+      - CUSTOM_MODELS_ENABLED=true
+      - CUSTOM_MODELS_BASE_URL=http://iskala-core:8001
     networks:
       - iskala-network
+    depends_on:
+      - iskala-core
+
+volumes:
+  open-webui-data:
 
 networks:
   iskala-network:
-    driver: bridge
-    name: iskala-network
-
-volumes:
-  iskala-data:
-  iskala-logs:
-  iskala-state: 
+    driver: bridge 
