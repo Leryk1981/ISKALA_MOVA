@@ -27,10 +27,10 @@ app.add_middleware(
 )
 
 # Конфигурация ISKALA
-ISKALA_BASE_URL = "http://localhost:8001"
-VAULT_BASE_URL = "http://localhost:8081"
-TRANSLATION_BASE_URL = "http://localhost:8082"
-RAG_BASE_URL = "http://localhost:8002"
+ISKALA_BASE_URL = "http://iskala-core:8001"
+VAULT_BASE_URL = "http://iskala-core:8081"
+TRANSLATION_BASE_URL = "http://iskala-core:8082"
+RAG_BASE_URL = "http://iskala-core:8002"
 
 # Pydantic модели
 class ISKALAMemorySearchRequest(BaseModel):

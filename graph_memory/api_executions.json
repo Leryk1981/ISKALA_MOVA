@@ -66,6 +66,24 @@
       "success": false,
       "user_rating": 0.0,
       "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:51:54.746731",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.758,
+      "success": true,
+      "user_rating": null,
+      "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:51:55.677718",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.758,
+      "success": false,
+      "user_rating": 0.0,
+      "origin": "catalog_search"
     }
   ],
   "task_management_8816cae6": [
@@ -98,6 +116,24 @@
     },
     {
       "timestamp": "2025-08-01T19:38:09.928720",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.6380000000000001,
+      "success": false,
+      "user_rating": 0.0,
+      "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:51:55.682055",
+      "api_tool": "google_translate_api",
+      "endpoint": "https://translation.googleapis.com/language/translate/v2",
+      "preferred_score": 0.6380000000000001,
+      "success": true,
+      "user_rating": null,
+      "origin": "catalog_search"
+    },
+    {
+      "timestamp": "2025-08-01T19:51:56.398276",
       "api_tool": "google_translate_api",
       "endpoint": "https://translation.googleapis.com/language/translate/v2",
       "preferred_score": 0.6380000000000001,
