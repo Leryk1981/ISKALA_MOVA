@@ -36,12 +36,18 @@ pytest-benchmark==4.0.0
 pytest-mock==3.12.0
 memory_profiler==0.61.0
 
-# API framework for vector endpoints (NEW for Task 2.3)
+# API framework for vector endpoints (Task 2.3)
 fastapi==0.104.1
 uvicorn==0.24.0
 
-# Additional utilities (NEW for Task 2.3)
+# Additional utilities (Task 2.3)
 asyncio-throttle==1.0.2
+
+# Redis for caching (NEW for Task 2.4)
+redis==5.0.1
+
+# Additional performance and analysis libraries (NEW for Task 2.4) 
+numpy==1.24.4
 
 # Development and monitoring
 httpx==0.25.2

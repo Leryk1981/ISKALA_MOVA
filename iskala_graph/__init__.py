@@ -73,6 +73,14 @@ from .services import (
     create_graph_vector_service,
     quick_search,
     
+    # 🔍 NEW: Semantic Search Service
+    SemanticSearchService,
+    SemanticSearchResult,
+    GraphPath,
+    SearchFacets,
+    PaginatedSearchResponse,
+    create_semantic_search_service,
+    
     # 🔧 Service Registry
     SERVICES
 )
@@ -89,6 +97,7 @@ from .services.document_processor import MultilingualDocumentProcessor as Docume
 from .services.embedding_service import EmbeddingService
 from .services.neo4j_driver import Neo4jConnection as GraphDB
 from .services.graph_vector_service import GraphVectorService as VectorSearch
+from .services.semantic_search_service import SemanticSearchService as SemanticSearch
 
 # Package-level exports
 __all__ = [
@@ -102,7 +111,8 @@ __all__ = [
     # 🧠 Core Infrastructure
     "Neo4jConnection",
     "GraphDB",  # Alias
-    "VectorSearch",  # NEW: GraphVectorService alias
+    "VectorSearch",  # GraphVectorService alias
+    "SemanticSearch",  # NEW: SemanticSearchService alias
     "get_neo4j_connection",
     "close_neo4j_connection",
     
@@ -146,6 +156,14 @@ __all__ = [
     "create_graph_vector_service",
     "quick_search",
     
+    # 🔍 NEW: Semantic Search Service
+    "SemanticSearchService",
+    "SemanticSearchResult",
+    "GraphPath",
+    "SearchFacets",
+    "PaginatedSearchResponse",
+    "create_semantic_search_service",
+    
     # 🔧 Infrastructure
     "SERVICES",
     
@@ -179,14 +197,39 @@ def quick_start():
     ```python
     import iskala_graph
     
-    # 🧠 NEW: Complete Vector Search Pipeline
+    # 🔍 NEW: Advanced Semantic Search with Hybrid Strategy
+    search_service = await iskala_graph.create_semantic_search_service()
+    
+    # Hybrid search (vector + graph + intent matching)
+    results = await search_service.hybrid_search(
+        query="штучний інтелект нейронні мережі",
+        language="uk",
+        intent_filter="learning",
+        k=10,
+        include_facets=True
+    )
+    
+    # Graph knowledge traversal
+    paths = await search_service.graph_walk(
+        start_node_id="chunk_abc123",
+        max_depth=3,
+        intent_filter=["research", "development"]
+    )
+    
+    # Intelligent search suggestions
+    suggestions = await search_service.get_search_suggestions(
+        partial_query="машинн",
+        language="uk"
+    )
+    
+    # 🧠 Complete Vector Search Pipeline (Previous)
     vector_service = await iskala_graph.create_graph_vector_service()
     
     # Process and index document
     result = await vector_service.process_and_index_document("document.pdf")
     print(f"Indexed {result.chunks_indexed} chunks")
     
-    # Semantic search
+    # Basic semantic search
     results = await vector_service.similarity_search(
         query="штучний інтелект в Україні", 
         language_filter="uk",

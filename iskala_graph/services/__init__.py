@@ -71,6 +71,21 @@ from .graph_vector_service import (
     quick_search
 )
 
+# 🔍 NEW: Semantic Search Service  
+from .semantic_search_service import (
+    # Main service
+    SemanticSearchService,
+    
+    # Data models
+    SearchResult as SemanticSearchResult,
+    GraphPath,
+    SearchFacets,
+    PaginatedSearchResponse,
+    
+    # Convenience functions
+    create_semantic_search_service
+)
+
 # Version info
 __version__ = "2.2.0"  # Updated for multilingual support
 __all__ = [
@@ -116,7 +131,15 @@ __all__ = [
     "SearchResult",
     "IndexingResult",
     "create_graph_vector_service",
-    "quick_search"
+    "quick_search",
+    
+    # 🔍 Semantic Search Service
+    "SemanticSearchService",
+    "SemanticSearchResult",
+    "GraphPath",
+    "SearchFacets",
+    "PaginatedSearchResponse",
+    "create_semantic_search_service"
 ]
 
 # Package metadata
@@ -131,5 +154,6 @@ SERVICES = {
     "multilingual_processor": MultilingualDocumentProcessor,
     "tokenizer_registry": TokenizerRegistry,
     "language_detector": LanguageDetector,
-    "graph_vector_service": GraphVectorService
+    "graph_vector_service": GraphVectorService,
+    "semantic_search_service": SemanticSearchService
 } 
