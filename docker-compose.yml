@@ -103,18 +103,29 @@ services:
       - ENABLE_OAUTH_DISCORD=false
       - ENABLE_OAUTH_MICROSOFT=false
       
-      # Настройки моделей (только OpenRouter API, без предустановленных моделей)
+      # Настройки моделей (только OpenRouter API, полностью отключаем Ollama)
       - DEFAULT_MODELS=
       - DEFAULT_MODELS_OPENAI=
       - DEFAULT_MODELS_ANTHROPIC=
+      - DEFAULT_MODELS_OLLAMA=
+      - AUTOMATIC_MODEL_INITIALIZATION=false
       
-      # Отключение Ollama (чтобы избежать ошибок подключения)
+      # Полное отключение Ollama (чтобы избежать ошибок подключения)
       - OLLAMA_BASE_URL=
       - OLLAMA_API_BASE_URL=
       - RAG_OLLAMA_BASE_URL=
       - ENABLE_OLLAMA=false
+      - OLLAMA_AUTO_PULL=false
+      - OLLAMA_AUTO_PULL_DISABLED=true
+      - ENABLE_OLLAMA_API=false
+      - OLLAMA_CONNECTION_CHECK=false
       - WHISPER_MODEL=base
       - WHISPER_MODEL_URL=
+      
+      # Принудительное отключение проверок Ollama
+      - ENABLE_MODEL_FILTER=false
+      - AUTO_UPDATE_DISABLED=true
+      - BACKEND_DISABLED=false
       
       # Настройки ISKALA интеграции
       - CUSTOM_MODELS_ENABLED=true
