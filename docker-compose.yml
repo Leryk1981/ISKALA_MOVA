@@ -79,9 +79,10 @@ services:
     environment:
       # OpenRouter API настройки
       - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=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
       
-      # Стандартная автентификация (простой подход)
+      # Стандартная автентификация (полная конфигурация)
+      - WEBUI_AUTH=true
       - DEFAULT_USER_ROLE=admin
       - ENABLE_SIGNUP=true
       - ENABLE_LOGIN_FORM=true
