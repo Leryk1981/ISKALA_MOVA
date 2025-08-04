@@ -1,37 +1,56 @@
-# Neo4j та Graph Database
-neo4j>=5.13.0
-neo4j-driver>=5.13.0
+# 🌍 ISKALA MOVA Multilingual Document Processing Requirements
+# Updated for enterprise-grade multilingual architecture
 
-# FastAPI та Async framework
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-pydantic>=2.4.0
+# Core dependencies (existing)
+neo4j==5.13.0
+fastapi==0.104.1
+uvicorn==0.24.0
+redis==5.0.1
+pydantic==2.5.0
 
-# Redis для кешування
-redis[hiredis]>=5.0.0
-
-# Embeddings та ML
-sentence-transformers>=2.2.0
-numpy>=1.24.0
+# Embedding and ML (existing)
+sentence-transformers==2.2.2
+transformers==4.36.0
 torch>=2.0.0
-transformers>=4.21.0
 
-# Compression та optimization
-zstd>=1.5.0
-psutil>=5.9.0
+# Caching and compression (existing)
+zstd==1.5.5.1
+psutil==5.9.6
 
-# Utilities
-python-dotenv>=1.0.0
-aiofiles>=23.0.0
-httpx>=0.25.0
+# Multilingual document processing (NEW)
+langchain==0.3.27
+langchain-core==0.3.72
+langchain-text-splitters==0.3.9
+langdetect==1.0.9
+nltk==3.9.1
 
-# Testing
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-pytest-benchmark>=4.0.0
-testcontainers>=3.7.0
-pytest-mock>=3.11.0
+# Document format support (NEW)
+python-docx==1.2.0
+PyPDF2==3.0.1
+lxml>=4.9.0
 
-# Logging та моніторинг
-structlog>=23.1.0
-prometheus-client>=0.17.0 
+# Testing and benchmarking (existing + new)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-benchmark==4.0.0
+pytest-mock==3.12.0
+memory_profiler==0.61.0
+
+# Development and monitoring
+httpx==0.25.2
+aiofiles==23.2.1
+
+# Optional: Advanced language processing
+# polyglot  # For advanced language detection (requires additional setup)
+# spacy>=3.7.0  # For advanced English processing
+# jieba>=0.42.1  # For Chinese text processing
+# razdel>=0.5.0  # For Russian text processing
+
+# Text processing utilities
+unicodedata2>=15.0.0; python_version < "3.13"
+
+# Async and concurrency
+asyncio-throttle==1.0.2
+
+# Logging and monitoring
+structlog==23.2.0 
