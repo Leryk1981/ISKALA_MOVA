@@ -81,18 +81,27 @@ services:
       - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
       - OPENAI_API_KEY=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
       
-      # Настройки безопасности
-      - WEBUI_SECRET_KEY=iskala-secret-key-2024
+      # Настройки безопасности (полностью отключаем аутентификацию)
+      - WEBUI_SECRET_KEY=
       - DEFAULT_USER_ROLE=admin
-      - ENABLE_SIGNUP=true
-      - ENABLE_LOGIN_FORM=true
+      - ENABLE_SIGNUP=false
+      - ENABLE_LOGIN_FORM=false
+      - ENABLE_COMMUNITY_SHARING=false
+      - WEBUI_AUTH=false
+      - SKIP_AUTHENTICATION=true
+      - NO_AUTH=true
+      - BYPASS_AUTH=true
       
       # Настройки веб-сервера
       - WEBUI_HOST=0.0.0.0
       - WEBUI_PORT=8080
       - DISABLE_UI=false
       - DISABLE_API=false
-      - DISABLE_AUTH=false
+      - DISABLE_AUTH=true
+      
+      # Отключение проблемных компонентов редактора
+      - ENABLE_RICH_TEXT_EDITOR=false
+      - TIPTAP_EXTENSIONS_DISABLED=true
       
       # Дополнительные настройки
       - ENABLE_SIGNUP=true
