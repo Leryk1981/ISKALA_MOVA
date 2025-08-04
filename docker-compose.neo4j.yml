@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # Neo4j Graph Database для ISKALA MOVA
+  neo4j:
+    image: neo4j:5.13-enterprise
+    container_name: iskala-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"  # HTTP UI
+      - "7687:7687"  # Bolt protocol
+    environment:
+      # Authentication
+      - NEO4J_AUTH=neo4j/iskala-neo4j-2024-secure
+      
+      # Enterprise license (можна використовувати Community version)
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      
+      # Memory configuration для продуктивності
+      - NEO4J_dbms_memory_heap_initial__size=1G
+      - NEO4J_dbms_memory_heap_max__size=2G
+      - NEO4J_dbms_memory_pagecache_size=1G
+      
+      # Security settings
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,gds.*
+      
+      # Network configuration
+      - NEO4J_dbms_default__listen__address=0.0.0.0
+      - NEO4J_dbms_connector_bolt_listen__address=0.0.0.0:7687
+      - NEO4J_dbms_connector_http_listen__address=0.0.0.0:7474
+      
+      # APOC configuration
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      
+      # Performance optimization
+      - NEO4J_dbms_transaction_timeout=60s
+      - NEO4J_dbms_locks_acquisition_timeout=60s
+      
+      # Ukrainian language support
+      - NEO4J_dbms_default__database=iskala-mova
+      
+    volumes:
+      # Persistent data storage
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-import:/var/lib/neo4j/import
+      - neo4j-plugins:/plugins
+      
+      # Configuration files
+      - ./neo4j/conf:/var/lib/neo4j/conf
+      - ./neo4j/certificates:/var/lib/neo4j/certificates
+      
+    networks:
+      - iskala-network
+    
+    # Health check для моніторингу
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:7474/db/neo4j/tx/commit || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Redis для кешування embeddings та сесій
+  redis:
+    image: redis:7-alpine
+    container_name: iskala-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=iskala-redis-2024
+    command: redis-server --requirepass iskala-redis-2024 --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - iskala-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+  neo4j-import:
+    driver: local
+  neo4j-plugins:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  iskala-network:
+    external: true 

@@ -1,0 +1,30 @@
+# Neo4j та Graph Database
+neo4j>=5.13.0
+neo4j-driver>=5.13.0
+
+# FastAPI та Async framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.4.0
+
+# Redis для кешування
+redis[hiredis]>=5.0.0
+
+# Embeddings та ML
+sentence-transformers>=2.2.0
+numpy>=1.24.0
+torch>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+aiofiles>=23.0.0
+httpx>=0.25.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+testcontainers>=3.7.0
+
+# Logging та моніторинг
+structlog>=23.1.0
+prometheus-client>=0.17.0 
