@@ -1,0 +1,9 @@
+{
+  "prompts": [
+    {
+      "name": "Simple Test",
+      "content": "You are a helpful assistant. Always respond in the same language as the user's message.",
+      "tags": ["test", "simple"]
+    }
+  ]
+} 

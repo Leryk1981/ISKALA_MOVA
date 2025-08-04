@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose для ISKALA + Open WebUI
 
 services:
   # ISKALA Core сервис
@@ -67,20 +67,19 @@ services:
       - iskala-core
     command: python iskala_openapi_server.py
 
-  # Open WebUI с предустановленными моделями OpenRouter и ISKALA Tools
+  # Open WebUI с OpenRouter API и ISKALA Tools
   open-webui:
-    image: ghcr.io/open-webui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:v0.6.18
     container_name: open-webui
     restart: unless-stopped
     ports:
-      - "3000:8080"
+      - "3001:8080"
     volumes:
       - open-webui-data:/app/backend/data
     environment:
       # OpenRouter API настройки
       - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
       - OPENAI_API_KEY=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
-      - DEFAULT_MODELS=moonshotai/kimi-k2
       
       # Настройки безопасности
       - WEBUI_SECRET_KEY=iskala-secret-key-2024
@@ -104,10 +103,18 @@ services:
       - ENABLE_OAUTH_DISCORD=false
       - ENABLE_OAUTH_MICROSOFT=false
       
-      # Настройки моделей
-      - DEFAULT_MODELS=moonshotai/kimi-k2,openai/gpt-4,anthropic/claude-3.5-sonnet
-      - DEFAULT_MODELS_OPENAI=moonshotai/kimi-k2,openai/gpt-4
-      - DEFAULT_MODELS_ANTHROPIC=anthropic/claude-3.5-sonnet
+      # Настройки моделей (только OpenRouter API, без предустановленных моделей)
+      - DEFAULT_MODELS=
+      - DEFAULT_MODELS_OPENAI=
+      - DEFAULT_MODELS_ANTHROPIC=
+      
+      # Отключение Ollama (чтобы избежать ошибок подключения)
+      - OLLAMA_BASE_URL=
+      - OLLAMA_API_BASE_URL=
+      - RAG_OLLAMA_BASE_URL=
+      - ENABLE_OLLAMA=false
+      - WHISPER_MODEL=base
+      - WHISPER_MODEL_URL=
       
       # Настройки ISKALA интеграции
       - CUSTOM_MODELS_ENABLED=true
@@ -125,6 +132,28 @@ services:
       
       # Разрешения для публичного шаринга промптов
       - USER_PERMISSIONS_WORKSPACE_PROMPTS_ALLOW_PUBLIC_SHARING=true
+      
+      # Настройки отладки и логирования
+      - LOG_LEVEL=INFO
+      - ENABLE_DEBUG=true
+      - ENABLE_LOGGING=true
+      
+      # Отключение кэширования для решения проблем с JS файлами
+      - DISABLE_CACHE=true
+      - CACHE_CONTROL=no-cache
+      - ETAG_DISABLED=true
+      
+      # Настройки загрузки файлов
+      - MAX_FILE_SIZE=50
+      - ALLOWED_FILE_TYPES=["json","txt","md","yaml","yml"]
+      
+      # Настройки промптов
+      - ENABLE_PROMPTS=true
+      - PROMPTS_FILE_SIZE_LIMIT=100
+      - PROMPTS_ALLOWED_EXTENSIONS=["json","txt","md"]
+      - PROMPTS_PUBLIC_ACCESS=true
+      - PROMPTS_ENABLED=true
+      - PROMPTS_IMPORT_ENABLED=true
       
       # Настройки RAG (загрузка знаний)
       - ENABLE_RAG=true

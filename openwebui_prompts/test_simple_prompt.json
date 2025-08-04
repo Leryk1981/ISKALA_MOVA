@@ -1,0 +1,12 @@
+[
+  {
+    "id": "test_simple_prompt",
+    "label": "Test Simple Prompt",
+    "value": "You are a helpful assistant. Always respond in the same language as the user's message."
+  },
+  {
+    "id": "test_simple_prompt_2",
+    "label": "Test Simple Prompt 2", 
+    "value": "You are a test assistant. Be helpful and friendly."
+  }
+] 

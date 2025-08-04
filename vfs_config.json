@@ -1,0 +1,193 @@
+{
+  "vfs": {
+    "version": "1.0.0",
+    "enabled": true,
+    "name": "Open Web UI Virtual File System",
+    "description": "Интегрированная виртуальная файловая система для управления проектами и кодом",
+    "initialized_at": null,
+    "storage_path": "/app/data/vfs",
+    "max_project_size": "100MB",
+    "max_projects_per_user": 50,
+    "max_files_per_project": 1000,
+    "auto_save": true,
+    "auto_save_interval": 30,
+    "sandbox_mode": true,
+    "enable_git_integration": false,
+    "enable_compilation": false
+  },
+  
+  "storage": {
+    "type": "local",
+    "compression_enabled": true,
+    "compression_level": 6,
+    "backup_enabled": true,
+    "backup_interval": 3600,
+    "backup_retention_days": 7,
+    "backup_compression": true,
+    "cache_enabled": true,
+    "cache_ttl": 1800,
+    "cleanup_interval": 86400
+  },
+  
+  "templates": {
+    "enabled": true,
+    "custom_templates_allowed": true,
+    "template_validation": "strict",
+    "max_template_size": "50MB",
+    "allowed_template_types": ["python", "javascript", "web", "api", "data"],
+    "auto_load_templates": true,
+    "template_cache_enabled": true
+  },
+  
+  "security": {
+    "sandbox_mode": true,
+    "allowed_extensions": [
+      ".py", ".js", ".ts", ".json", ".md", ".txt", 
+      ".csv", ".yml", ".yaml", ".xml", ".html", 
+      ".css", ".sql", ".sh", ".bat"
+    ],
+    "blocked_extensions": [
+      ".exe", ".dll", ".so", ".dylib", ".bin", 
+      ".deb", ".rpm", ".dmg", ".msi"
+    ],
+    "max_file_size": "10MB",
+    "max_filename_length": 255,
+    "path_traversal_protection": true,
+    "content_validation": true,
+    "malware_scanning": false,
+    "rate_limiting": {
+      "enabled": true,
+      "requests_per_minute": 60,
+      "projects_per_hour": 10
+    }
+  },
+  
+  "features": {
+    "project_management": {
+      "enabled": true,
+      "allow_project_deletion": true,
+      "allow_project_export": true,
+      "allow_project_import": true,
+      "project_sharing": false
+    },
+    "file_operations": {
+      "enabled": true,
+      "allow_file_upload": true,
+      "allow_file_download": true,
+      "syntax_highlighting": true,
+      "auto_formatting": true,
+      "version_history": false
+    },
+    "code_execution": {
+      "enabled": false,
+      "allowed_languages": ["python"],
+      "execution_timeout": 30,
+      "memory_limit": "256MB",
+      "sandbox_environment": true
+    },
+    "collaboration": {
+      "enabled": false,
+      "real_time_editing": false,
+      "project_sharing": false,
+      "comments": false
+    }
+  },
+  
+  "integration": {
+    "openwebui": {
+      "storage_api": true,
+      "workspace_api": true,
+      "settings_api": true,
+      "command_interface": true,
+      "ui_components": true
+    },
+    "external_services": {
+      "github_integration": false,
+      "docker_integration": false,
+      "cloud_storage": false
+    }
+  },
+  
+  "ui": {
+    "theme": "dark",
+    "font_family": "Monaco, 'Cascadia Code', 'Fira Code', monospace",
+    "font_size": 14,
+    "line_numbers": true,
+    "word_wrap": true,
+    "minimap": true,
+    "autocomplete": true,
+    "vim_mode": false
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "file": "/app/data/logs/vfs.log",
+    "max_file_size": "10MB",
+    "backup_count": 5,
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "enable_debug": false,
+    "log_user_actions": true,
+    "log_system_events": true,
+    "log_performance": false
+  },
+  
+  "performance": {
+    "cache_enabled": true,
+    "cache_size": "100MB",
+    "lazy_loading": true,
+    "compression_enabled": true,
+    "index_enabled": true,
+    "search_indexing": true,
+    "background_tasks": true,
+    "worker_threads": 2
+  },
+  
+  "monitoring": {
+    "enabled": true,
+    "metrics_collection": true,
+    "health_checks": true,
+    "performance_monitoring": false,
+    "usage_analytics": false,
+    "error_reporting": true,
+    "uptime_monitoring": true
+  },
+  
+  "api": {
+    "version": "v1",
+    "base_path": "/api/vfs",
+    "rate_limiting": true,
+    "authentication_required": false,
+    "cors_enabled": true,
+    "documentation_enabled": true,
+    "swagger_ui": true
+  },
+  
+  "development": {
+    "debug_mode": false,
+    "verbose_logging": false,
+    "development_tools": false,
+    "mock_data": false,
+    "testing_mode": false,
+    "profiling": false
+  },
+  
+  "limits": {
+    "max_concurrent_operations": 10,
+    "max_memory_usage": "500MB",
+    "max_cpu_usage": 80,
+    "max_disk_usage": "1GB",
+    "max_network_requests": 100,
+    "timeout_seconds": 30
+  },
+  
+  "notifications": {
+    "enabled": true,
+    "project_events": true,
+    "file_events": true,
+    "system_events": true,
+    "error_notifications": true,
+    "success_notifications": false,
+    "email_notifications": false,
+    "webhook_notifications": false
+  }
+} 
