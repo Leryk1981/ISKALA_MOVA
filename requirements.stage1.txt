@@ -1,0 +1,42 @@
+# ========================================================
+# STAGE 1: АРХИТЕКТУРНАЯ СТАБИЛИЗАЦИЯ - ДОПОЛНИТЕЛЬНЫЕ ЗАВИСИМОСТИ
+# ========================================================
+
+# Core Framework (existing)
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.5.0
+
+# Database & ORM (NEW for Stage 1)
+sqlalchemy>=2.0.0
+flask-migrate>=4.0.0
+alembic>=1.12.0
+
+# Testing Framework (enhanced)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+httpx>=0.25.0  # For integration tests
+
+# Development Tools
+black>=23.0.0  # Code formatting
+flake8>=6.0.0  # Linting
+mypy>=1.5.0    # Type checking
+
+# Performance & Monitoring
+memory-profiler>=0.61.0
+psutil>=5.9.6
+
+# Security (existing)
+slowapi>=0.1.9
+python-multipart>=0.0.6
+
+# ========================================================
+# INSTALLATION COMMANDS
+# ========================================================
+# pip install -r requirements.stage1.txt
+# 
+# OR install individually:
+# pip install sqlalchemy flask-migrate alembic pytest pytest-asyncio pytest-cov httpx black flake8 mypy
+# ======================================================== 
