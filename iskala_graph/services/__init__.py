@@ -31,7 +31,7 @@ from .embedding_service import (
     close_embedding_service
 )
 
-# 🌍 NEW: Multilingual document processing
+# 🌍 Multilingual document processing
 from .document_processor import (
     # Main processor
     MultilingualDocumentProcessor,
@@ -55,6 +55,20 @@ from .document_processor import (
     # Convenience functions
     process_multilingual_document,
     chunk_multilingual_text
+)
+
+# 🧠 NEW: Graph Vector Integration
+from .graph_vector_service import (
+    # Main service
+    GraphVectorService,
+    
+    # Data models
+    SearchResult,
+    IndexingResult,
+    
+    # Convenience functions
+    create_graph_vector_service,
+    quick_search
 )
 
 # Version info
@@ -95,7 +109,14 @@ __all__ = [
     "TokenizerRegistry",
     "LanguageDetector",
     "process_multilingual_document",
-    "chunk_multilingual_text"
+    "chunk_multilingual_text",
+    
+    # 🧠 Graph Vector Integration
+    "GraphVectorService",
+    "SearchResult",
+    "IndexingResult",
+    "create_graph_vector_service",
+    "quick_search"
 ]
 
 # Package metadata
@@ -109,5 +130,6 @@ SERVICES = {
     "embedding": EmbeddingService,
     "multilingual_processor": MultilingualDocumentProcessor,
     "tokenizer_registry": TokenizerRegistry,
-    "language_detector": LanguageDetector
+    "language_detector": LanguageDetector,
+    "graph_vector_service": GraphVectorService
 } 

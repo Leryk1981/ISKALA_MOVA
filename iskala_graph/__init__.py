@@ -66,6 +66,13 @@ from .services import (
     process_multilingual_document,
     chunk_multilingual_text,
     
+    # 🧠 Graph Vector Integration
+    GraphVectorService,
+    SearchResult,
+    IndexingResult,
+    create_graph_vector_service,
+    quick_search,
+    
     # 🔧 Service Registry
     SERVICES
 )
@@ -81,6 +88,7 @@ from .cypher import (
 from .services.document_processor import MultilingualDocumentProcessor as DocumentProcessor
 from .services.embedding_service import EmbeddingService
 from .services.neo4j_driver import Neo4jConnection as GraphDB
+from .services.graph_vector_service import GraphVectorService as VectorSearch
 
 # Package-level exports
 __all__ = [
@@ -94,6 +102,7 @@ __all__ = [
     # 🧠 Core Infrastructure
     "Neo4jConnection",
     "GraphDB",  # Alias
+    "VectorSearch",  # NEW: GraphVectorService alias
     "get_neo4j_connection",
     "close_neo4j_connection",
     
@@ -130,6 +139,13 @@ __all__ = [
     "process_multilingual_document",
     "chunk_multilingual_text",
     
+    # 🧠 Graph Vector Integration
+    "GraphVectorService",
+    "SearchResult",
+    "IndexingResult", 
+    "create_graph_vector_service",
+    "quick_search",
+    
     # 🔧 Infrastructure
     "SERVICES",
     
@@ -163,18 +179,29 @@ def quick_start():
     ```python
     import iskala_graph
     
-    # Initialize services
+    # 🧠 NEW: Complete Vector Search Pipeline
+    vector_service = await iskala_graph.create_graph_vector_service()
+    
+    # Process and index document
+    result = await vector_service.process_and_index_document("document.pdf")
+    print(f"Indexed {result.chunks_indexed} chunks")
+    
+    # Semantic search
+    results = await vector_service.similarity_search(
+        query="штучний інтелект в Україні", 
+        language_filter="uk",
+        k=5
+    )
+    
+    # LEGACY: Manual pipeline  
     processor = iskala_graph.DocumentProcessor()
-    embedding_service = iskala_graph.EmbeddingService()
+    embedding_service = iskala_graph.EmbeddingService() 
     graph_db = iskala_graph.GraphDB()
     
-    # Process multilingual document
     chunks = await processor.process_file("document.pdf")
-    
-    # Generate embeddings
     for chunk in chunks:
         embedding = await embedding_service.get_embedding(chunk.content)
-        await graph_db.save_chunk_with_embedding(chunk, embedding)
+        # Store manually...
     ```
     """
     return {

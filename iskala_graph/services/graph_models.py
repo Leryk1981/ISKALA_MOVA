@@ -102,16 +102,24 @@ class Phase(BaseNode):
         }
 
 class ContextChunk(BaseNode):
-    """Частина контексту для RAG"""
+    """🧠 Enhanced ContextChunk with vector embeddings for semantic search"""
     content: str = Field(..., description="Текстовий контент")
-    source: str = Field(..., description="Джерело контенту")
+    source_doc: str = Field(..., description="Назва джерельного документа")
     chunk_hash: str = Field(..., description="Хеш для дедуплікації")
     
-    # Embeddings (зберігається як список float)
-    embedding: Optional[List[float]] = Field(None, description="Vector embedding")
+    # 🧠 Vector embeddings (384-dimensional for sentence-transformers)
+    embedding: List[float] = Field(default_factory=list, description="384-dim embedding vector")
     
-    # Метадані
-    language: str = Field(default="uk")
+    # 🌍 Multilingual support
+    language: str = Field(default="uk", description="ISO 639-1 language code")
+    
+    # 📊 Processing metadata from MultilingualDocumentProcessor
+    position: int = Field(default=0, description="Chunk position in document")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Processing confidence")
+    word_count: int = Field(default=0, ge=0)
+    sentence_count: int = Field(default=0, ge=0)
+    
+    # 🔍 Search optimization
     keywords: List[str] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     
@@ -121,9 +129,48 @@ class ContextChunk(BaseNode):
         chunk_hash = hashlib.sha256(text.encode()).hexdigest()
         return cls(
             content=text,
-            source=source,
+            source_doc=source,
             chunk_hash=chunk_hash
         )
+    
+    @classmethod
+    def from_doc_chunk(cls, doc_chunk, embedding: List[float]) -> "ContextChunk":
+        """Create ContextChunk from MultilingualDocumentProcessor DocChunk + embedding"""
+        return cls(
+            content=doc_chunk.content,
+            source_doc=doc_chunk.source_doc,
+            chunk_hash=doc_chunk.chunk_hash,
+            embedding=embedding,
+            language=doc_chunk.language,
+            position=doc_chunk.position,
+            confidence=doc_chunk.confidence,
+            word_count=doc_chunk.word_count,
+            sentence_count=doc_chunk.sentence_count,
+            metadata=doc_chunk.metadata
+        )
+    
+    def validate_embedding_dimensions(self) -> bool:
+        """Validate that embedding has correct dimensions (384 for sentence-transformers)"""
+        return len(self.embedding) == 384 if self.embedding else True
+    
+    def to_cypher_merge(self) -> str:
+        """Generate optimized Cypher MERGE query with vector support"""
+        return f"""
+        MERGE (c:ContextChunk {{chunk_hash: '{self.chunk_hash}'}})
+        SET c.content = $content,
+            c.source_doc = $source_doc,
+            c.language = $language,
+            c.embedding = $embedding,
+            c.position = $position,
+            c.confidence = $confidence,
+            c.word_count = $word_count,
+            c.sentence_count = $sentence_count,
+            c.keywords = $keywords,
+            c.metadata = $metadata,
+            c.updated_at = datetime()
+        ON CREATE SET c.created_at = datetime()
+        RETURN c
+        """
 
 class User(BaseNode):
     """Користувач системи"""
