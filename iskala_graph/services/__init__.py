@@ -26,6 +26,13 @@ from .graph_models import (
     CypherTemplates
 )
 
+from .embedding_service import (
+    EmbeddingService,
+    EmbeddingConfig,
+    get_embedding_service,
+    close_embedding_service
+)
+
 __all__ = [
     "get_neo4j_connection",
     "close_neo4j_connection",
@@ -39,5 +46,9 @@ __all__ = [
     "NodeType",
     "RelationType",
     "GraphQueryBuilder",
-    "CypherTemplates"
+    "CypherTemplates",
+    "EmbeddingService",
+    "EmbeddingConfig",
+    "get_embedding_service",
+    "close_embedding_service"
 ] 
