@@ -1,0 +1,123 @@
+# Multi-stage production build for ISKALA Graph Search Service
+# Optimized for security, performance, and minimal image size
+
+# =====================================
+# Stage 1: Dependencies Builder
+# =====================================
+FROM python:3.11-slim as builder
+
+LABEL maintainer="ISKALA MOVA Team" \
+      description="ISKALA Graph Search Service - Builder Stage" \
+      version="1.0.0"
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libc6-dev \
+    libffi-dev \
+    libssl-dev \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Set working directory
+WORKDIR /build
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir --user -r requirements.txt
+
+# Additional production dependencies
+RUN pip install --no-cache-dir --user \
+    prometheus-client \
+    psutil \
+    slowapi \
+    python-multipart \
+    uvicorn[standard] \
+    gunicorn
+
+# =====================================
+# Stage 2: Production Runtime
+# =====================================
+FROM python:3.11-slim as production
+
+LABEL maintainer="ISKALA MOVA Team" \
+      description="ISKALA Graph Search Service - Production" \
+      version="1.0.0"
+
+# Build arguments
+ARG BUILD_ENV=production
+ARG BUILD_VERSION=1.0.0
+ARG BUILD_DATE
+ARG BUILD_COMMIT
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/home/iskala/.local/bin:$PATH" \
+    BUILD_ENV=${BUILD_ENV} \
+    BUILD_VERSION=${BUILD_VERSION}
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    dumb-init \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user for security
+RUN groupadd -r iskala && useradd -r -g iskala -s /bin/bash iskala && \
+    mkdir -p /home/iskala && chown -R iskala:iskala /home/iskala
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python packages from builder stage
+COPY --from=builder /root/.local /home/iskala/.local
+
+# Copy application code
+COPY --chown=iskala:iskala . .
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/cache && \
+    chown -R iskala:iskala /app
+
+# Switch to non-root user
+USER iskala
+
+# Add build metadata
+LABEL build.env=${BUILD_ENV} \
+      build.version=${BUILD_VERSION} \
+      build.date=${BUILD_DATE} \
+      build.commit=${BUILD_COMMIT}
+
+# Health check script
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8004/health || exit 1
+
+# Expose ports
+EXPOSE 8004 9090
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# Production startup with Gunicorn + Uvicorn workers
+CMD ["gunicorn", "main:app", \
+     "--bind", "0.0.0.0:8004", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--workers", "2", \
+     "--worker-connections", "1000", \
+     "--max-requests", "10000", \
+     "--max-requests-jitter", "1000", \
+     "--timeout", "120", \
+     "--keep-alive", "2", \
+     "--access-logfile", "/app/logs/access.log", \
+     "--error-logfile", "/app/logs/error.log", \
+     "--log-level", "info", \
+     "--preload"] 

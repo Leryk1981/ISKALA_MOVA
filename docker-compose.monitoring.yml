@@ -1,0 +1,282 @@
+version: '3.8'
+
+# =====================================================
+# ISKALA Production Monitoring Stack
+# =====================================================
+# Prometheus + Grafana + Alertmanager для comprehensive мониторинга
+
+services:
+  # Prometheus - Metrics Collection and Storage
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: iskala-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      - '--web.external-url=http://localhost:9090'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    networks:
+      - iskala_network
+    environment:
+      - TZ=UTC
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana - Visualization and Dashboards
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: iskala-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"  # Changed to avoid conflict with Open WebUI
+    environment:
+      # Security
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-iskala_grafana_2024!}
+      GF_SECURITY_ADMIN_USER: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_ALLOW_ORG_CREATE: "false"
+      
+      # Authentication
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_AUTH_BASIC_ENABLED: "true"
+      
+      # Server settings
+      GF_SERVER_ROOT_URL: http://localhost:3001
+      GF_SERVER_SERVE_FROM_SUB_PATH: "false"
+      
+      # Database (using SQLite for simplicity)
+      GF_DATABASE_TYPE: sqlite3
+      GF_DATABASE_PATH: /var/lib/grafana/grafana.db
+      
+      # Logging
+      GF_LOG_LEVEL: info
+      GF_LOG_MODE: console
+      
+      # Plugins
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,grafana-worldmap-panel
+      
+      # SMTP (optional - configure for alerts)
+      # GF_SMTP_ENABLED: "true"
+      # GF_SMTP_HOST: smtp.gmail.com:587
+      # GF_SMTP_USER: your-email@gmail.com
+      # GF_SMTP_PASSWORD: your-app-password
+      
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - iskala_network
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Alertmanager - Alert Management and Notifications
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    container_name: iskala-alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+      - '--web.route-prefix=/'
+      - '--cluster.listen-address=0.0.0.0:9094'
+      - '--log.level=info'
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./monitoring/alertmanager/templates:/etc/alertmanager/templates:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - iskala_network
+    environment:
+      - TZ=UTC
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Node Exporter - Host Metrics
+  node_exporter:
+    image: prom/node-exporter:v1.6.0
+    container_name: iskala-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.textfile.directory=/var/lib/node_exporter/textfile_collector'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - node_exporter_data:/var/lib/node_exporter
+    networks:
+      - iskala_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  # cAdvisor - Container Metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: iskala-cadvisor
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    networks:
+      - iskala_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    privileged: true
+
+  # Redis Exporter - Redis Metrics
+  redis_exporter:
+    image: oliver006/redis_exporter:v1.51.0
+    container_name: iskala-redis-exporter
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-iskala_prod_redis_2024!}
+      REDIS_EXPORTER_LOG_FORMAT: json
+    networks:
+      - iskala_network
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 32M
+          cpus: '0.1'
+
+  # Blackbox Exporter - Endpoint Monitoring
+  blackbox_exporter:
+    image: prom/blackbox-exporter:v0.24.0
+    container_name: iskala-blackbox-exporter
+    restart: unless-stopped
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./monitoring/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    networks:
+      - iskala_network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 32M
+          cpus: '0.1'
+
+# Network configuration
+networks:
+  iskala_network:
+    external: true
+
+# Persistent volumes
+volumes:
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/prometheus
+  
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/grafana
+  
+  alertmanager_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/alertmanager
+  
+  node_exporter_data:
+    driver: local
+
+# External services reference (from main compose)
+# These services should be running in the main deployment
+external_links:
+  - neo4j:neo4j
+  - redis:redis
+  - graph_search:graph_search
+  - tool_server:tool_server 

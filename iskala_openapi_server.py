@@ -1,45 +1,108 @@
 #!/usr/bin/env python3
 """
-OpenAPI Tool Server для интеграции модулей ISKALA в Open WebUI
+🔐 ISKALA OpenAPI Tool Server - SECURE VERSION
+=============================================
+
+Secure OpenAPI Tool Server для интеграции модулей ISKALA в Open WebUI
+с полной системой безопасности и защитой от уязвимостей.
+
+Security Features:
+- ✅ API Key Authentication
+- ✅ Rate Limiting  
+- ✅ Secure CORS
+- ✅ Input Validation
+- ✅ Audit Logging
 """
 
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.security import APIKeyHeader
+from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import requests
 import json
+import logging
+import time
 from typing import Dict, Any, List, Optional
 import uvicorn
 
+# Import secure configuration
+from iskala_basis.config.secure_config import config
+
+# Setup logging
+logging.basicConfig(level=getattr(logging, config.LOG_LEVEL))
+logger = logging.getLogger(__name__)
+
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
-    title="ISKALA OpenAPI Tool Server",
-    description="API сервер для интеграции модулей ISKALA в Open WebUI",
-    version="1.0.0"
+    title="ISKALA OpenAPI Tool Server - SECURE",
+    description="🔐 Secure API сервер для интеграции модулей ISKALA в Open WebUI",
+    version="2.0.0-secure"
 )
 
-# CORS настройки для Open WebUI
+# Add rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Security: API Key Authentication
+api_key_header = APIKeyHeader(name="X-API-Key") if config.ENABLE_API_KEY_AUTH else None
+
+async def verify_api_key(api_key: str = Depends(api_key_header)) -> str:
+    """Verify API key if authentication enabled"""
+    if not config.ENABLE_API_KEY_AUTH:
+        return "development"
+        
+    if not api_key or api_key not in config.API_KEYS:
+        logger.warning(f"Invalid API key attempt: {api_key[:10]}...")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key"
+        )
+    
+    logger.info(f"Valid API key used: {api_key[:10]}...")
+    return api_key
+
+# Secure CORS настройки
+cors_config = config.get_cors_config()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    **cors_config
 )
 
-# Конфигурация ISKALA
-ISKALA_BASE_URL = "http://iskala-core:8001"
-VAULT_BASE_URL = "http://iskala-core:8081"
-TRANSLATION_BASE_URL = "http://iskala-core:8082"
-RAG_BASE_URL = "http://iskala-core:8002"
+# Service URLs from secure config
+ISKALA_BASE_URL = f"http://iskala-core:{config.ISKALA_PORT}"  
+VAULT_BASE_URL = f"http://iskala-core:{config.VAULT_PORT}"
+TRANSLATION_BASE_URL = f"http://iskala-core:{config.TRANSLATION_PORT}"
+RAG_BASE_URL = f"http://iskala-core:{config.RAG_PORT}"
 
-# Pydantic модели
+# Enhanced Pydantic модели с строгой валидацией
 class ISKALAMemorySearchRequest(BaseModel):
-    query: str
-    limit: Optional[int] = 10
+    query: str = Field(
+        min_length=1, 
+        max_length=1000, 
+        description="Search query string"
+    )
+    limit: Optional[int] = Field(
+        default=10,
+        ge=1, 
+        le=100,
+        description="Maximum number of results (1-100)"
+    )
 
 class ISKALAToolCallRequest(BaseModel):
-    tool_name: str
-    parameters: Dict[str, Any]
+    tool_name: str = Field(
+        min_length=1,
+        max_length=100,
+        description="Tool name to execute"
+    )
+    parameters: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Tool parameters"
+    )
 
 class ISKALATranslationRequest(BaseModel):
     text: str
@@ -205,22 +268,77 @@ async def get_openapi_schema():
     return OPENAPI_SCHEMA
 
 @app.post("/iskala/memory/search")
-async def search_iskala_memory(request: ISKALAMemorySearchRequest):
-    """Пошук в пам'яті ISKALA"""
+@limiter.limit(f"{config.RATE_LIMIT_REQUESTS}/{config.RATE_LIMIT_WINDOW}second")
+async def search_iskala_memory(
+    request_obj: Request,
+    request: ISKALAMemorySearchRequest,
+    api_key: str = Depends(verify_api_key)
+):
+    """🔐 Secure пошук в пам'яті ISKALA з authentication і rate limiting"""
+    start_time = time.time()
+    
+    # Audit logging
+    logger.info(
+        f"Memory search request",
+        extra={
+            "query_length": len(request.query),
+            "limit": request.limit,
+            "client_ip": request_obj.client.host,
+            "api_key": api_key[:10] + "..." if api_key != "development" else "development"
+        }
+    )
+    
     try:
         response = requests.post(
             f"{ISKALA_BASE_URL}/api/memory/search",
             json={"query": request.query, "limit": request.limit},
-            timeout=10
+            timeout=config.REQUEST_TIMEOUT
         )
         response.raise_for_status()
-        return response.json()
+        
+        result = response.json()
+        
+        # Success logging
+        logger.info(
+            f"Memory search completed",
+            extra={
+                "response_time": round((time.time() - start_time) * 1000, 2),
+                "results_count": len(result.get("results", [])),
+                "status": "success"
+            }
+        )
+        
+        return result
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Memory search request failed: {str(e)}")
+        raise HTTPException(status_code=503, detail=f"ISKALA service unavailable: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Помилка пошуку в пам'яті: {str(e)}")
+        logger.error(f"Memory search unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error")
 
-@app.post("/iskala/tools/call")
-async def call_iskala_tool(request: ISKALAToolCallRequest):
-    """Виклик інструменту ISKALA"""
+@app.post("/iskala/tools/call")  
+@limiter.limit(f"{config.RATE_LIMIT_REQUESTS//2}/{config.RATE_LIMIT_WINDOW}second")  # Stricter limit для tool execution
+async def call_iskala_tool(
+    request_obj: Request,
+    request: ISKALAToolCallRequest,
+    api_key: str = Depends(verify_api_key)
+):
+    """🔐 Secure виклик інструменту ISKALA з authentication і stricter rate limiting"""
+    start_time = time.time()
+    
+    # Enhanced audit logging for tool execution
+    logger.warning(
+        f"Tool execution request - HIGH RISK OPERATION",
+        extra={
+            "tool_name": request.tool_name,
+            "parameters_count": len(request.parameters),
+            "client_ip": request_obj.client.host,
+            "api_key": api_key[:10] + "..." if api_key != "development" else "development",
+            "risk_level": "HIGH"
+        }
+    )
+    
     try:
         response = requests.post(
             f"{ISKALA_BASE_URL}/api/tools/call",
@@ -228,7 +346,7 @@ async def call_iskala_tool(request: ISKALAToolCallRequest):
                 "tool_name": request.tool_name,
                 "parameters": request.parameters
             },
-            timeout=10
+            timeout=config.REQUEST_TIMEOUT * 2  # Double timeout для tool operations
         )
         response.raise_for_status()
         return response.json()

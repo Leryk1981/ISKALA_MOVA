@@ -1,0 +1,251 @@
+# =====================================================
+# ISKALA Production Alert Rules
+# =====================================================
+# Critical alerts for production monitoring
+
+groups:
+  # Service Health Alerts
+  - name: iskala.service_health
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "ISKALA service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} service has been down for more than 1 minute on {{ $labels.instance }}"
+          runbook_url: "https://docs.iskala.ai/alerts/service-down"
+
+      - alert: GraphSearchUnhealthy
+        expr: probe_success{job="blackbox-http", instance=~".*graph_search.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: graph_search
+        annotations:
+          summary: "Graph Search API is not responding"
+          description: "Graph Search health check has been failing for more than 2 minutes"
+          runbook_url: "https://docs.iskala.ai/alerts/graph-search-unhealthy"
+
+      - alert: ToolServerUnhealthy
+        expr: probe_success{job="blackbox-http", instance=~".*tool_server.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: tool_server
+        annotations:
+          summary: "Tool Server API is not responding"
+          description: "Tool Server health check has been failing for more than 2 minutes"
+          runbook_url: "https://docs.iskala.ai/alerts/tool-server-unhealthy"
+
+  # Database Alerts
+  - name: iskala.database
+    rules:
+      - alert: Neo4jDown
+        expr: up{job="neo4j"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: neo4j
+        annotations:
+          summary: "Neo4j database is down"
+          description: "Neo4j database has been unreachable for more than 1 minute"
+          runbook_url: "https://docs.iskala.ai/alerts/neo4j-down"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis cache has been unreachable for more than 1 minute"
+          runbook_url: "https://docs.iskala.ai/alerts/redis-down"
+
+      - alert: Neo4jHighMemoryUsage
+        expr: neo4j_memory_heap_used_bytes / neo4j_memory_heap_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: neo4j
+        annotations:
+          summary: "Neo4j memory usage is high"
+          description: "Neo4j heap memory usage is {{ $value | humanizePercentage }} for more than 5 minutes"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_config_maxmemory > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} for more than 5 minutes"
+
+  # Performance Alerts
+  - name: iskala.performance
+    rules:
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.job }}"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.job }}"
+
+      - alert: LowThroughput
+        expr: rate(http_requests_total[5m]) < 1
+        for: 10m
+        labels:
+          severity: warning
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "Low request throughput"
+          description: "Request rate is {{ $value }} requests/second for {{ $labels.job }}"
+
+  # Infrastructure Alerts
+  - name: iskala.infrastructure
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% for more than 5 minutes"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} for more than 5 minutes"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.mountpoint }}"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          service: infrastructure
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.mountpoint }}"
+
+  # Container Alerts
+  - name: iskala.containers
+    rules:
+      - alert: ContainerKilled
+        expr: time() - container_last_seen > 60
+        for: 0m
+        labels:
+          severity: warning
+          service: containers
+        annotations:
+          summary: "Container killed on {{ $labels.instance }}"
+          description: "Container {{ $labels.name }} has disappeared"
+
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total[3m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: containers
+        annotations:
+          summary: "Container high CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is {{ $value | humanizePercentage }}"
+
+      - alert: ContainerHighMemory
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: containers
+        annotations:
+          summary: "Container high memory usage"
+          description: "Container {{ $labels.name }} memory usage is {{ $value | humanizePercentage }}"
+
+  # Search Engine Specific Alerts
+  - name: iskala.search_engine
+    rules:
+      - alert: EmbeddingServiceSlow
+        expr: embedding_request_duration_seconds{quantile="0.95"} > 5.0
+        for: 3m
+        labels:
+          severity: warning
+          service: embedding
+        annotations:
+          summary: "Embedding service is slow"
+          description: "95th percentile embedding request time is {{ $value }}s"
+
+      - alert: SearchCacheMissHigh
+        expr: rate(redis_keyspace_misses_total[5m]) / rate(redis_keyspace_hits_total[5m]) > 0.3
+        for: 5m
+        labels:
+          severity: warning
+          service: search_cache
+        annotations:
+          summary: "High search cache miss rate"
+          description: "Cache miss rate is {{ $value | humanizePercentage }}"
+
+      - alert: GraphTraversalSlow
+        expr: graph_traversal_duration_seconds{quantile="0.95"} > 10.0
+        for: 3m
+        labels:
+          severity: warning
+          service: graph_search
+        annotations:
+          summary: "Graph traversal is slow"
+          description: "95th percentile graph traversal time is {{ $value }}s"
+
+  # Security Alerts
+  - name: iskala.security
+    rules:
+      - alert: UnauthorizedAPIAccess
+        expr: rate(http_requests_total{status="401"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "High unauthorized API access rate"
+          description: "Unauthorized access rate is {{ $value }} requests/second"
+
+      - alert: SuspiciousActivity
+        expr: rate(http_requests_total{status="429"}[5m]) > 1
+        for: 1m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "High rate limiting triggered"
+          description: "Rate limiting triggered {{ $value }} times per second" 

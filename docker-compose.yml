@@ -79,7 +79,7 @@ services:
     environment:
       # OpenRouter API настройки
       - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
       
       # Стандартная автентификация (полная конфигурация)
       - WEBUI_AUTH=true
@@ -87,7 +87,7 @@ services:
       - ENABLE_SIGNUP=true
       - ENABLE_LOGIN_FORM=true
       - ENABLE_COMMUNITY_SHARING=false
-      - WEBUI_SECRET_KEY=iskala-secret-key-2024
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
       
       # Настройки веб-сервера
       - WEBUI_HOST=0.0.0.0
