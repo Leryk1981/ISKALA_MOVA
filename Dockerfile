@@ -28,7 +28,6 @@ RUN pip install --no-cache-dir \
 
 # Копирование всех модулей
 COPY src/ ./src/
-COPY system_prompts/ ./system_prompts/
 COPY data/ ./data/
 COPY state/ ./state/
 COPY trees/ ./trees/
