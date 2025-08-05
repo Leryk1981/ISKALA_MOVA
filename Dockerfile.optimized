@@ -1,0 +1,113 @@
+# =============================================================================
+# ISKALA API - OPTIMIZED MULTI-STAGE BUILD
+# Reduces container size from ~9.7GB to ~500MB
+# =============================================================================
+
+# =============================================================================
+# BUILDER STAGE - Only for building dependencies
+# =============================================================================
+FROM python:3.11-slim as builder
+
+# Build arguments
+ARG ENVIRONMENT=production
+ARG APP_VERSION=1.1.0
+
+# Install only build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install Python dependencies
+COPY requirements.txt requirements.stage1.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements.stage1.txt
+
+# Install production-specific packages
+RUN pip install --no-cache-dir \
+    fastapi[all]==0.104.1 \
+    uvicorn[standard]==0.24.0 \
+    gunicorn==21.2.0 \
+    neo4j==5.13.0 \
+    redis==5.0.1 \
+    structlog==23.2.0 \
+    prometheus-client==0.19.0
+
+# =============================================================================
+# RUNTIME STAGE - Minimal production image
+# =============================================================================
+FROM python:3.11-slim as runtime
+
+# Build arguments
+ARG ENVIRONMENT=production
+ARG APP_VERSION=1.1.0
+
+# Labels for metadata
+LABEL maintainer="ISKALA Team" \
+      version="${APP_VERSION}" \
+      environment="${ENVIRONMENT}" \
+      description="ISKALA API with Layered Architecture - Optimized"
+
+# Environment variables
+ENV PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    ENVIRONMENT=${ENVIRONMENT} \
+    APP_VERSION=${APP_VERSION}
+
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash --uid 1000 app
+
+# Set working directory
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy ONLY essential application files
+COPY --chown=app:app app.py ./
+COPY --chown=app:app iskala_basis/ ./iskala_basis/
+
+# Copy VFS backup system
+COPY --chown=app:app vfs_auto_backup.js ./
+COPY --chown=app:app vfs_backup_config.json ./
+COPY --chown=app:app test_vfs_backup.json ./
+
+# Copy essential configuration
+COPY --chown=app:app requirements.txt ./
+
+# Create necessary directories with proper permissions
+RUN mkdir -p \
+    /app/vfs-backups \
+    /app/logs \
+    /app/data \
+    /app/state \
+    && chown -R app:app /app \
+    && chmod -R 755 /app
+
+# Switch to non-root user
+USER app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Default command - optimized for single container
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"] 

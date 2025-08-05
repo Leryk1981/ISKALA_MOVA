@@ -1,0 +1,40 @@
+{
+  "vfs_backup": {
+    "enabled": true,
+    "api_endpoint": "/api/v1/vfs/backup",
+    "backup_interval_minutes": 15,
+    "triggers": {
+      "scheduled": true,
+      "page_close": true,
+      "focus_lost": true,
+      "data_changed": true
+    },
+    "debounce_delay_seconds": 5,
+    "max_backup_size_mb": 10,
+    "retention": {
+      "keep_daily": 30,
+      "keep_weekly": 12,
+      "keep_monthly": 12
+    },
+    "git": {
+      "auto_commit": true,
+      "commit_message_template": "🔄 VFS auto-backup {timestamp}",
+      "branch": "main"
+    },
+    "notifications": {
+      "show_success": false,
+      "show_errors": true,
+      "debug_mode": false
+    },
+    "storage": {
+      "backup_directory": "vfs-backups",
+      "filename_template": "vfs-backup-{timestamp}.json",
+      "compression": false
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "created": "2024-08-05T12:30:00Z",
+    "description": "VFS Auto Backup Configuration"
+  }
+} 

@@ -4,10 +4,14 @@ ISKALA FastAPI Application with Layered Architecture
 Production-ready API with Dependency Injection
 """
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import logging
+from datetime import datetime
+from pathlib import Path
+import json
+import subprocess
 
 # Import layered architecture components
 from iskala_basis.services import TranslationService, MemoryService, TranslationServiceError, MemoryServiceError
@@ -348,6 +352,107 @@ async def system_health():
             "status": "unhealthy",
             "error": str(e)
         }
+
+# VFS Backup endpoints
+@app.post("/api/v1/vfs/backup")
+async def backup_vfs_data(
+    backup_data: dict,
+    background_tasks: BackgroundTasks
+):
+    """
+    Автоматический backup VFS данных в Git репозиторий
+    """
+    try:
+        timestamp = datetime.now().isoformat()
+        backup_filename = f"vfs-backup-{timestamp.replace(':', '-')}.json"
+        backup_path = Path("vfs-backups") / backup_filename
+        
+        # Создаем директорию если не существует
+        backup_path.parent.mkdir(exist_ok=True)
+        
+        # Сохраняем backup
+        with open(backup_path, 'w', encoding='utf-8') as f:
+            json.dump({
+                "timestamp": timestamp,
+                "backup_data": backup_data,
+                "metadata": {
+                    "version": "1.0",
+                    "source": "vfs-auto-backup"
+                }
+            }, f, indent=2, ensure_ascii=False)
+        
+        # Добавляем в фоновую задачу Git commit
+        background_tasks.add_task(commit_vfs_backup, backup_path)
+        
+        return {
+            "status": "success",
+            "message": "VFS backup created successfully",
+            "backup_file": str(backup_path),
+            "timestamp": timestamp
+        }
+        
+    except Exception as e:
+        logger.error(f"VFS backup failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Backup failed: {str(e)}"
+        )
+
+@app.get("/api/v1/vfs/backups")
+async def list_vfs_backups():
+    """
+    Список всех VFS backup файлов
+    """
+    try:
+        backup_dir = Path("vfs-backups")
+        if not backup_dir.exists():
+            return {"backups": []}
+        
+        backups = []
+        for backup_file in backup_dir.glob("vfs-backup-*.json"):
+            stat = backup_file.stat()
+            backups.append({
+                "filename": backup_file.name,
+                "size": stat.st_size,
+                "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+                "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
+            })
+        
+        return {
+            "backups": sorted(backups, key=lambda x: x["created"], reverse=True)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to list VFS backups: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to list backups: {str(e)}"
+        )
+
+async def commit_vfs_backup(backup_path: Path):
+    """
+    Фоновая задача для Git commit VFS backup
+    """
+    try:
+        import subprocess
+        
+        # Git add
+        subprocess.run([
+            "git", "add", str(backup_path)
+        ], check=True)
+        
+        # Git commit
+        commit_message = f"🔄 VFS auto-backup {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        subprocess.run([
+            "git", "commit", "-m", commit_message
+        ], check=True)
+        
+        logger.info(f"VFS backup committed to Git: {backup_path}")
+        
+    except subprocess.CalledProcessError as e:
+        logger.warning(f"Git commit failed for VFS backup: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error during Git commit: {e}")
 
 # ============================
 # APPLICATION LIFECYCLE

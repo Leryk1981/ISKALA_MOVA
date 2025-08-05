@@ -1,0 +1,96 @@
+# =============================================================================
+# ISKALA API - ALPINE LINUX ULTRA-LIGHTWEIGHT
+# Target size: ~200-300MB
+# =============================================================================
+
+FROM python:3.11-alpine as builder
+
+# Build arguments
+ARG ENVIRONMENT=production
+ARG APP_VERSION=1.1.0
+
+# Install build dependencies for Alpine
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    postgresql-dev \
+    git \
+    build-base
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install Python dependencies
+COPY requirements.txt requirements.stage1.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements.stage1.txt
+
+# Install essential packages only
+RUN pip install --no-cache-dir \
+    fastapi==0.104.1 \
+    uvicorn==0.24.0 \
+    pydantic==2.5.0 \
+    httpx==0.25.2
+
+# =============================================================================
+# RUNTIME STAGE - Ultra minimal
+# =============================================================================
+FROM python:3.11-alpine as runtime
+
+# Build arguments
+ARG ENVIRONMENT=production
+ARG APP_VERSION=1.1.0
+
+# Labels
+LABEL maintainer="ISKALA Team" \
+      version="${APP_VERSION}" \
+      environment="${ENVIRONMENT}" \
+      description="ISKALA API - Alpine Ultra-Lightweight"
+
+# Environment variables
+ENV PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    ENVIRONMENT=${ENVIRONMENT}
+
+# Install only runtime dependencies
+RUN apk add --no-cache \
+    curl \
+    ca-certificates \
+    libpq
+
+# Create non-root user (Alpine style)
+RUN adduser -D -s /bin/sh -u 1000 app
+
+# Set working directory
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy ONLY core application files
+COPY --chown=app:app app.py ./
+COPY --chown=app:app iskala_basis/ ./iskala_basis/
+COPY --chown=app:app vfs_auto_backup.js ./
+COPY --chown=app:app vfs_backup_config.json ./
+
+# Create minimal directories
+RUN mkdir -p /app/vfs-backups /app/logs && \
+    chown -R app:app /app
+
+# Switch to non-root user
+USER app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Minimal command
+CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"] 

@@ -1,5 +1,4 @@
-version: '3.8'
-
+# Удаляем устаревший атрибут version для современного Docker Compose
 services:
   # Neo4j Graph Database - Production Configuration
   neo4j:
@@ -121,10 +120,11 @@ services:
       args:
         - BUILD_ENV=production
         - BUILD_VERSION=${BUILD_VERSION:-1.0.0}
-    container_name: iskala-graph-search-prod
+    # Убираем container_name для поддержки replicas
+    # Docker Compose автоматически создаст имена: iskala_graph_search_1, iskala_graph_search_2
     restart: unless-stopped
     ports:
-      - "8004:8004"  # Main API port
+      - "8004-8005:8004"  # Диапазон портов для реплик
     environment:
       # Service configuration
       ENVIRONMENT: production
