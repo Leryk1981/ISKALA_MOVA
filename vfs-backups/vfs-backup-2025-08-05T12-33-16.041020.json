@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-08-05T12:33:16.041020",
+  "backup_data": {
+    "reason": "test",
+    "timestamp": "2024-08-05T12:30:00Z",
+    "vfs_data": {
+      "vfs_projects": {
+        "test_project": {
+          "name": "Test Project",
+          "files": {
+            "main.py": "print('Hello VFS!')",
+            "config.json": "{\"version\": \"1.0\"}"
+          }
+        }
+      },
+      "vfs_meta": {
+        "version": "1.0",
+        "created": "2024-08-05T12:30:00Z"
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "source": "vfs-auto-backup"
+  }
+}
