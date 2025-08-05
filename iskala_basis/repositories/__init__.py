@@ -9,9 +9,17 @@ from .translation_repository import (
     TranslationRepositoryInterface,
     MockTranslationRepository
 )
+from .memory_repository import (
+    Neo4jMemoryRepository,
+    MemoryRepositoryInterface,
+    MockMemoryRepository
+)
 
 __all__ = [
     "TranslationRepository",
     "TranslationRepositoryInterface", 
-    "MockTranslationRepository"
+    "MockTranslationRepository",
+    "Neo4jMemoryRepository",
+    "MemoryRepositoryInterface",
+    "MockMemoryRepository"
 ]

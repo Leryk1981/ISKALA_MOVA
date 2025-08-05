@@ -15,6 +15,20 @@ from .translation_models import (
     SupportedLanguagesResponse,
     TranslationError
 )
+from .memory_models import (
+    SearchStrategy,
+    MemoryPhase,
+    SearchRequest,
+    SearchResponse,
+    MemoryPattern,
+    SearchFacets,
+    GraphPath,
+    GraphTraversalRequest,
+    GraphTraversalResponse,
+    MemoryIndexRequest,
+    MemoryIndexResponse,
+    MemoryHealthResponse
+)
 
 __all__ = [
     "LanguageCode",
@@ -25,5 +39,17 @@ __all__ = [
     "UniversalSenseResponse",
     "LanguageBubbleResponse",
     "SupportedLanguagesResponse",
-    "TranslationError"
+    "TranslationError",
+    "SearchStrategy",
+    "MemoryPhase",
+    "SearchRequest",
+    "SearchResponse", 
+    "MemoryPattern",
+    "SearchFacets",
+    "GraphPath",
+    "GraphTraversalRequest",
+    "GraphTraversalResponse",
+    "MemoryIndexRequest",
+    "MemoryIndexResponse",
+    "MemoryHealthResponse"
 ]
